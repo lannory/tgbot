@@ -2929,5 +2929,855 @@
     "priorityListing": false,
     "listingMarketplaceId": "EBAY_US",
     "alreadyPosted": true
+  },
+  {
+    "itemId": "v1|326839100296|0",
+    "title": "GoPro HERO4 Action Camera Silver with spare batteries & other accessories",
+    "leafCategoryIds": [
+      "11724"
+    ],
+    "categories": [
+      {
+        "categoryId": "11724",
+        "categoryName": "Camcorders"
+      },
+      {
+        "categoryId": "625",
+        "categoryName": "Cameras & Photo"
+      }
+    ],
+    "image": {
+      "imageUrl": "https://i.ebayimg.com/images/g/Qa4AAeSwWp9pASXQ/s-l225.jpg"
+    },
+    "price": {
+      "value": "59.99",
+      "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C326839100296%7C0",
+    "seller": {
+      "username": "sagesounds",
+      "feedbackPercentage": "98.8",
+      "feedbackScore": 1576
+    },
+    "condition": "Used",
+    "conditionId": "3000",
+    "thumbnailImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/Qa4AAeSwWp9pASXQ/s-l1600.jpg"
+      }
+    ],
+    "shippingOptions": [
+      {
+        "shippingCostType": "CALCULATED"
+      }
+    ],
+    "buyingOptions": [
+      "FIXED_PRICE",
+      "BEST_OFFER"
+    ],
+    "epid": "204251735",
+    "itemWebUrl": "https://www.ebay.com/itm/326839100296?_skw=gopro+hero&hash=item4c1920e388:g:Qa4AAeSwWp9pASXQ",
+    "itemLocation": {
+      "postalCode": "029**",
+      "country": "US"
+    },
+    "additionalImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/Y9sAAeSwblppASXQ/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/ORUAAeSwv3FpASXQ/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/b~MAAeSw7IhpASXR/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/RYYAAeSwNYVpASXQ/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/TGoAAeSwgYJpASXR/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/eMkAAeSwINppASXS/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/WNIAAeSw03JpASXR/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/X2wAAeSwc3VpASXR/s-l225.jpg"
+      }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "326839100296",
+    "availableCoupons": false,
+    "itemOriginDate": "2025-10-28T20:24:44.000Z",
+    "itemCreationDate": "2025-10-28T20:24:44.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+  },
+  {
+    "itemId": "v1|116849897006|0",
+    "title": "GoPro HERO11 Black Mini - Compact Waterproof Action Camera",
+    "leafCategoryIds": [
+      "11724"
+    ],
+    "categories": [
+      {
+        "categoryId": "11724",
+        "categoryName": "Camcorders"
+      },
+      {
+        "categoryId": "625",
+        "categoryName": "Cameras & Photo"
+      }
+    ],
+    "image": {
+      "imageUrl": "https://i.ebayimg.com/images/g/rP4AAeSwL5RpASK6/s-l225.jpg"
+    },
+    "price": {
+      "value": "199.00",
+      "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C116849897006%7C0",
+    "seller": {
+      "username": "t0ymine",
+      "feedbackPercentage": "100.0",
+      "feedbackScore": 2154
+    },
+    "condition": "Used",
+    "conditionId": "3000",
+    "thumbnailImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/rP4AAeSwL5RpASK6/s-l1600.jpg"
+      }
+    ],
+    "shippingOptions": [
+      {
+        "shippingCostType": "CALCULATED"
+      }
+    ],
+    "buyingOptions": [
+      "FIXED_PRICE"
+    ],
+    "epid": "4056389794",
+    "itemWebUrl": "https://www.ebay.com/itm/116849897006?_skw=gopro+hero&hash=item1b34cbee2e:g:rP4AAeSwL5RpASK6",
+    "itemLocation": {
+      "postalCode": "275**",
+      "country": "US"
+    },
+    "adultOnly": false,
+    "legacyItemId": "116849897006",
+    "availableCoupons": false,
+    "itemOriginDate": "2025-10-28T20:10:14.000Z",
+    "itemCreationDate": "2025-10-28T20:10:14.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+  },
+  {
+    "itemId": "v1|116849894327|0",
+    "title": "🔥GoPro - HERO11 Black Creator Edition Action Camera 🔥",
+    "leafCategoryIds": [
+      "11724"
+    ],
+    "categories": [
+      {
+        "categoryId": "11724",
+        "categoryName": "Camcorders"
+      },
+      {
+        "categoryId": "625",
+        "categoryName": "Cameras & Photo"
+      }
+    ],
+    "image": {
+      "imageUrl": "https://i.ebayimg.com/images/g/EO4AAeSwrfZpAR-X/s-l225.jpg"
+    },
+    "price": {
+      "value": "248.99",
+      "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C116849894327%7C0",
+    "seller": {
+      "username": "eddie.528",
+      "feedbackPercentage": "100.0",
+      "feedbackScore": 631
+    },
+    "condition": "Used",
+    "conditionId": "3000",
+    "thumbnailImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/EO4AAeSwrfZpAR-X/s-l1600.jpg"
+      }
+    ],
+    "shippingOptions": [
+      {
+        "shippingCostType": "FIXED",
+        "shippingCost": {
+          "value": "0.00",
+          "currency": "USD"
+        },
+        "minEstimatedDeliveryDate": "2025-10-30T07:00:00.000Z",
+        "maxEstimatedDeliveryDate": "2025-11-01T07:00:00.000Z"
+      }
+    ],
+    "buyingOptions": [
+      "FIXED_PRICE"
+    ],
+    "epid": "13056390992",
+    "itemWebUrl": "https://www.ebay.com/itm/116849894327?_skw=gopro+hero&hash=item1b34cbe3b7:g:EO4AAeSwrfZpAR-X",
+    "itemLocation": {
+      "postalCode": "922**",
+      "country": "US"
+    },
+    "additionalImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/M2AAAeSwr7hpAR-X/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/OOgAAeSwl7NpAR-X/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/MTIAAeSwb81pAR-X/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/FKQAAeSwxz9pAR-X/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/MK4AAeSwDV1pAR-X/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/PvIAAeSwLv5pAR-Y/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/IKIAAeSwDfRpAR-X/s-l225.jpg"
+      }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "116849894327",
+    "availableCoupons": false,
+    "itemOriginDate": "2025-10-28T20:08:34.000Z",
+    "itemCreationDate": "2025-10-28T20:08:34.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+  },
+  {
+    "itemId": "v1|326839080162|0",
+    "title": "GoPro Hero 7 Black 4K Camera BUNDLE",
+    "leafCategoryIds": [
+      "11724"
+    ],
+    "categories": [
+      {
+        "categoryId": "11724",
+        "categoryName": "Camcorders"
+      },
+      {
+        "categoryId": "625",
+        "categoryName": "Cameras & Photo"
+      }
+    ],
+    "image": {
+      "imageUrl": "https://i.ebayimg.com/images/g/Fk0AAeSwEGlpASCB/s-l225.jpg"
+    },
+    "price": {
+      "value": "89.00",
+      "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C326839080162%7C0",
+    "seller": {
+      "username": "zopo1947",
+      "feedbackPercentage": "99.2",
+      "feedbackScore": 1113
+    },
+    "condition": "Used",
+    "conditionId": "3000",
+    "thumbnailImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/Fk0AAeSwEGlpASCB/s-l1600.jpg"
+      }
+    ],
+    "shippingOptions": [
+      {
+        "shippingCostType": "FIXED",
+        "shippingCost": {
+          "value": "9.00",
+          "currency": "USD"
+        },
+        "minEstimatedDeliveryDate": "2025-10-30T07:00:00.000Z",
+        "maxEstimatedDeliveryDate": "2025-11-03T08:00:00.000Z"
+      }
+    ],
+    "buyingOptions": [
+      "FIXED_PRICE"
+    ],
+    "itemWebUrl": "https://www.ebay.com/itm/326839080162?_skw=gopro+hero&hash=item4c192094e2:g:Fk0AAeSwEGlpASCB",
+    "itemLocation": {
+      "postalCode": "953**",
+      "country": "US"
+    },
+    "additionalImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/PwcAAeSwmpBpASCB/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/LjYAAeSwvYxpASCB/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/ReYAAeSwblppASCB/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/JdIAAeSwakppASCB/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/Tc8AAeSwfa5pASCB/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/Wl8AAeSwlippASCB/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/h64AAeSwd0tpASCC/s-l225.jpg"
+      }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "326839080162",
+    "availableCoupons": false,
+    "itemOriginDate": "2025-10-28T20:00:34.000Z",
+    "itemCreationDate": "2025-10-28T20:00:34.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+  },
+  {
+    "itemId": "v1|236421388975|0",
+    "title": "GoPro Hero 3 Plus Black With Extras (Tested) LCD Battery Charger Battery Manuals",
+    "leafCategoryIds": [
+      "11724"
+    ],
+    "categories": [
+      {
+        "categoryId": "11724",
+        "categoryName": "Camcorders"
+      },
+      {
+        "categoryId": "625",
+        "categoryName": "Cameras & Photo"
+      }
+    ],
+    "image": {
+      "imageUrl": "https://i.ebayimg.com/images/g/SooAAeSwheNpAR6X/s-l225.jpg"
+    },
+    "price": {
+      "value": "49.99",
+      "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C236421388975%7C0",
+    "seller": {
+      "username": "treasurehunter64",
+      "feedbackPercentage": "100.0",
+      "feedbackScore": 3507
+    },
+    "condition": "Used",
+    "conditionId": "3000",
+    "thumbnailImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/SooAAeSwheNpAR6X/s-l1600.jpg"
+      }
+    ],
+    "pickupOptions": [
+      {
+        "pickupLocationType": "ARRANGED_LOCATION"
+      }
+    ],
+    "buyingOptions": [
+      "FIXED_PRICE"
+    ],
+    "itemWebUrl": "https://www.ebay.com/itm/236421388975?_skw=gopro+hero&hash=item370bd01aaf:g:SooAAeSwheNpAR6X",
+    "itemLocation": {
+      "postalCode": "300**",
+      "country": "US"
+    },
+    "additionalImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/LDUAAeSwxyFpAR6W/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/DAAAAeSwEGlpAR6X/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/MX4AAeSw9vtpAR6X/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/MSwAAeSw9fNpAR6X/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/P5YAAeSwltVpAR6Z/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/N-QAAeSwxi9pAR6Y/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/QfsAAeSwNsppAR6Y/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/SkQAAeSw83BpAR6Y/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/HsgAAeSwkNZpAR6Z/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/RoYAAeSwreJpAR6Z/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/R8QAAeSwgPxpAR6a/s-l225.jpg"
+      }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "236421388975",
+    "availableCoupons": false,
+    "itemOriginDate": "2025-10-28T19:53:56.000Z",
+    "itemCreationDate": "2025-10-28T19:53:56.000Z",
+    "topRatedBuyingExperience": true,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+  },
+  {
+    "itemId": "v1|389156463688|0",
+    "title": "GoPro HERO8 Black Waterproof 4K Ultra HD Video Action Camera with Touch Screen",
+    "leafCategoryIds": [
+      "11724"
+    ],
+    "categories": [
+      {
+        "categoryId": "11724",
+        "categoryName": "Camcorders"
+      },
+      {
+        "categoryId": "625",
+        "categoryName": "Cameras & Photo"
+      }
+    ],
+    "image": {
+      "imageUrl": "https://i.ebayimg.com/images/g/NjEAAeSwfa5pARxR/s-l225.jpg"
+    },
+    "price": {
+      "value": "109.00",
+      "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C389156463688%7C0",
+    "seller": {
+      "username": "bbjewelryandpawn",
+      "feedbackPercentage": "99.2",
+      "feedbackScore": 8867
+    },
+    "condition": "Used",
+    "conditionId": "3000",
+    "thumbnailImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/NjEAAeSwfa5pARxR/s-l1600.jpg"
+      }
+    ],
+    "shippingOptions": [
+      {
+        "shippingCostType": "FIXED",
+        "shippingCost": {
+          "value": "0.00",
+          "currency": "USD"
+        },
+        "minEstimatedDeliveryDate": "2025-10-30T07:00:00.000Z",
+        "maxEstimatedDeliveryDate": "2025-11-01T07:00:00.000Z"
+      }
+    ],
+    "buyingOptions": [
+      "FIXED_PRICE",
+      "BEST_OFFER"
+    ],
+    "itemWebUrl": "https://www.ebay.com/itm/389156463688?_skw=gopro+hero&hash=item5a9b886448:g:NjEAAeSwfa5pARxR",
+    "itemLocation": {
+      "postalCode": "600**",
+      "country": "US"
+    },
+    "additionalImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/BCsAAeSwznBpAR0K/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/SXAAAeSw7lFpAR0S/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/M-MAAeSw2FtpAR0g/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/LREAAeSwRDdpARxR/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/LQYAAeSwVLdpARxR/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/OScAAeSwdzppARxS/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/ILAAAeSwGK5pAR0u/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/I4kAAeSw85VpAR0z/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/8skAAeSwO5dpARxR/s-l225.jpg"
+      }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "389156463688",
+    "availableCoupons": false,
+    "itemOriginDate": "2025-10-28T19:45:47.000Z",
+    "itemCreationDate": "2025-10-28T19:45:47.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+  },
+  {
+    "itemId": "v1|317476316401|0",
+    "title": "Large Carrying Case for GoPro Hero 13, 12, 11, 10, 9, 8, 7, 6, 5 Black, AKASO...",
+    "leafCategoryIds": [
+      "11724"
+    ],
+    "categories": [
+      {
+        "categoryId": "11724",
+        "categoryName": "Camcorders"
+      },
+      {
+        "categoryId": "625",
+        "categoryName": "Cameras & Photo"
+      }
+    ],
+    "image": {
+      "imageUrl": "https://i.ebayimg.com/images/g/MRsAAeSwLGtpAR4s/s-l225.jpg"
+    },
+    "price": {
+      "value": "31.67",
+      "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C317476316401%7C0",
+    "seller": {
+      "username": "yuuko-54",
+      "feedbackPercentage": "99.2",
+      "feedbackScore": 129
+    },
+    "condition": "New",
+    "conditionId": "1000",
+    "thumbnailImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/MRsAAeSwLGtpAR4s/s-l1200.jpg"
+      }
+    ],
+    "shippingOptions": [
+      {
+        "shippingCostType": "FIXED",
+        "shippingCost": {
+          "value": "0.00",
+          "currency": "USD"
+        },
+        "minEstimatedDeliveryDate": "2025-10-31T07:00:00.000Z",
+        "maxEstimatedDeliveryDate": "2025-11-06T08:00:00.000Z"
+      }
+    ],
+    "buyingOptions": [
+      "FIXED_PRICE"
+    ],
+    "itemWebUrl": "https://www.ebay.com/itm/317476316401?_skw=gopro+hero&hash=item49eb1024f1:g:MRsAAeSwLGtpAR4s",
+    "itemLocation": {
+      "postalCode": "928**",
+      "country": "US"
+    },
+    "additionalImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/K0AAAeSwbIppAR4s/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/OE4AAeSwVzhpAR4s/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/NhQAAeSwawBpAR4s/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/O~MAAeSw0odpAR4s/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/M-AAAeSw0ilpAR4s/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/CiEAAeSwEGlpAR4s/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/ImcAAeSwbTRpAR4s/s-l225.jpg"
+      }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "317476316401",
+    "availableCoupons": false,
+    "itemOriginDate": "2025-10-28T19:43:58.000Z",
+    "itemCreationDate": "2025-10-28T19:43:58.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+  },
+  {
+    "itemId": "v1|127457824711|0",
+    "title": "GoPro HERO8 Black 4K UHD Action Camera with Carrying Case and Accessories",
+    "leafCategoryIds": [
+      "11724"
+    ],
+    "categories": [
+      {
+        "categoryId": "11724",
+        "categoryName": "Camcorders"
+      },
+      {
+        "categoryId": "625",
+        "categoryName": "Cameras & Photo"
+      }
+    ],
+    "image": {
+      "imageUrl": "https://i.ebayimg.com/images/g/L0YAAeSwyj9pABAA/s-l225.jpg"
+    },
+    "price": {
+      "value": "150.00",
+      "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C127457824711%7C0",
+    "seller": {
+      "username": "gemastore_bins",
+      "feedbackPercentage": "98.4",
+      "feedbackScore": 2102
+    },
+    "condition": "Used",
+    "conditionId": "3000",
+    "thumbnailImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/L0YAAeSwyj9pABAA/s-l1600.jpg"
+      }
+    ],
+    "shippingOptions": [
+      {
+        "shippingCostType": "FIXED",
+        "shippingCost": {
+          "value": "0.00",
+          "currency": "USD"
+        },
+        "minEstimatedDeliveryDate": "2025-10-30T07:00:00.000Z",
+        "maxEstimatedDeliveryDate": "2025-11-03T08:00:00.000Z"
+      }
+    ],
+    "buyingOptions": [
+      "FIXED_PRICE",
+      "BEST_OFFER"
+    ],
+    "itemWebUrl": "https://www.ebay.com/itm/127457824711?_skw=gopro+hero&hash=item1dad140fc7:g:L0YAAeSwyj9pABAA",
+    "itemLocation": {
+      "postalCode": "334**",
+      "country": "US"
+    },
+    "additionalImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/wB8AAeSwHv1pABAA/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/DwkAAeSwOwJpABAA/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/sDEAAeSw8O1pAA~-/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/s4YAAeSwHZZpAA~-/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/LRcAAeSwbgdpAA~~/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/FekAAeSwjxBpAA~9/s-l225.jpg"
+      }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "127457824711",
+    "availableCoupons": false,
+    "itemOriginDate": "2025-10-28T19:43:45.000Z",
+    "itemCreationDate": "2025-10-28T19:43:45.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+  },
+  {
+    "itemId": "v1|267451311705|0",
+    "title": " GoPro HERO7 Action Camera - Black, Best Gift For Young Kids!! 4k!",
+    "leafCategoryIds": [
+      "11724"
+    ],
+    "categories": [
+      {
+        "categoryId": "11724",
+        "categoryName": "Camcorders"
+      },
+      {
+        "categoryId": "625",
+        "categoryName": "Cameras & Photo"
+      }
+    ],
+    "image": {
+      "imageUrl": "https://i.ebayimg.com/images/g/6hUAAeSwyixpARpj/s-l225.jpg"
+    },
+    "price": {
+      "value": "152.00",
+      "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C267451311705%7C0",
+    "seller": {
+      "username": "skimonster1",
+      "feedbackPercentage": "100.0",
+      "feedbackScore": 280
+    },
+    "condition": "Used",
+    "conditionId": "3000",
+    "thumbnailImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/6hUAAeSwyixpARpj/s-l1600.jpg"
+      }
+    ],
+    "shippingOptions": [
+      {
+        "shippingCostType": "CALCULATED"
+      }
+    ],
+    "buyingOptions": [
+      "FIXED_PRICE",
+      "AUCTION"
+    ],
+    "bidCount": 0,
+    "currentBidPrice": {
+      "value": "28.05",
+      "currency": "USD"
+    },
+    "epid": "5034761178",
+    "itemWebUrl": "https://www.ebay.com/itm/267451311705?_skw=gopro+hero&hash=item3e45572659:g:6hUAAeSwyixpARpj",
+    "itemLocation": {
+      "postalCode": "813**",
+      "country": "US"
+    },
+    "additionalImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/CHoAAeSwIGBpARpg/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/AJsAAeSw4T9pARpg/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/MgEAAeSwWwFpARph/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/94cAAeSwHb1pARph/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/J7EAAeSw-L1pARpj/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/IBgAAeSwlxdpARpk/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/NtMAAeSwdjNpARpk/s-l225.jpg"
+      }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "267451311705",
+    "availableCoupons": false,
+    "itemOriginDate": "2025-10-28T19:42:06.000Z",
+    "itemCreationDate": "2025-10-28T19:42:06.000Z",
+    "itemEndDate": "2025-11-04T20:42:06.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
+  },
+  {
+    "itemId": "v1|406329552714|0",
+    "title": "GoPro HERO4 Silver Action Camera Ultra HD",
+    "leafCategoryIds": [
+      "11724"
+    ],
+    "categories": [
+      {
+        "categoryId": "11724",
+        "categoryName": "Camcorders"
+      },
+      {
+        "categoryId": "625",
+        "categoryName": "Cameras & Photo"
+      }
+    ],
+    "image": {
+      "imageUrl": "https://i.ebayimg.com/images/g/AroAAeSwSrhpARiO/s-l225.jpg"
+    },
+    "price": {
+      "value": "39.99",
+      "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C406329552714%7C0",
+    "seller": {
+      "username": "gergonz-7700",
+      "feedbackPercentage": "98.9",
+      "feedbackScore": 3151
+    },
+    "condition": "Used",
+    "conditionId": "3000",
+    "thumbnailImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/AroAAeSwSrhpARiO/s-l1600.jpg"
+      }
+    ],
+    "shippingOptions": [
+      {
+        "shippingCostType": "FIXED",
+        "shippingCost": {
+          "value": "8.00",
+          "currency": "USD"
+        },
+        "minEstimatedDeliveryDate": "2025-10-30T07:00:00.000Z",
+        "maxEstimatedDeliveryDate": "2025-11-03T08:00:00.000Z"
+      }
+    ],
+    "buyingOptions": [
+      "FIXED_PRICE",
+      "BEST_OFFER"
+    ],
+    "itemWebUrl": "https://www.ebay.com/itm/406329552714?_skw=gopro+hero&hash=item5e9b20ef4a:g:AroAAeSwSrhpARiO",
+    "itemLocation": {
+      "postalCode": "342**",
+      "country": "US"
+    },
+    "additionalImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/J4wAAeSw0cxpARiO/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/EaEAAeSwrW1pARiP/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/CasAAeSwF69pARiP/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/FvYAAeSwDLNpARiY/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/h7oAAeSw5YppARiQ/s-l225.jpg"
+      }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "406329552714",
+    "availableCoupons": false,
+    "itemOriginDate": "2025-10-28T19:26:23.000Z",
+    "itemCreationDate": "2025-10-28T19:26:23.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US"
   }
 ]

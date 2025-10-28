@@ -22,8 +22,8 @@ const SEARCH_FILE = './searchConfig.json';
 const DATA_FILE = './data.json';
 
 
-const dataPath = path.resolve(__dirname, 'data.json');
-const searchPath = path.resolve(__dirname, 'searchConfig.json')
+const dataPath = path.join(__dirname, 'data.json');
+const searchPath = path.join(__dirname, 'searchConfig.json')
 let token;
 
 

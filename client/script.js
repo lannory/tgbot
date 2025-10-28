@@ -21,6 +21,8 @@ bot.start(ctx => ctx.reply(ctx.message.from.username + 'hello'));
 
 
 
+
+
 function showMenu (bot, chatId) {
 	bot.telegram.sendMessage(chatId, "Choose action", {
 		reply_markup: {
