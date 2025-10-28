@@ -15,7 +15,7 @@ const bot = new Telegraf(process.env.BOT_TOKEN)
 
 bot.use(new LocalSession({ database: 'sessions.json' }).middleware());
 
-
+const BACKEND_IP = process.env.BACKEND_IP;
 
 bot.start(ctx => ctx.reply(ctx.message.from.username + 'hello'));
 
@@ -35,7 +35,7 @@ function showMenu (bot, chatId) {
 
 
 const fetchData = async (bot, chatId, ctx) => {
-	const response = await axios.get('http://localhost:3000/data').catch((err) => console.log(err));
+	const response = await axios.get(`http://${BACKEND_IP}:300/data`).catch((err) => console.log(err));
 	const result = response.data;
 	console.log(result)
 
@@ -71,7 +71,7 @@ bot.on("message", async (ctx) => {
 
 		await ctx.reply(`Search value was set to ${ctx.session.search}`);
 		ctx.session.state = 'default';
-		await axios.post('https://localhost:3000/searchconfig', {body: userText});
+		await axios.post(`http://${BACKEND_IP}:3000/searchconfig`, {body: userText});
 		console.log(ctx.session.search)
 		return;
 	}
