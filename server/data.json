@@ -2295,7 +2295,8 @@
     "itemCreationDate": "2025-10-28T13:22:40.000Z",
     "topRatedBuyingExperience": true,
     "priorityListing": false,
-    "listingMarketplaceId": "EBAY_US"
+    "listingMarketplaceId": "EBAY_US",
+    "alreadyPosted": true
   },
   {
     "itemId": "v1|306571523753|0",
@@ -2386,7 +2387,8 @@
     "itemCreationDate": "2025-10-28T13:17:37.000Z",
     "topRatedBuyingExperience": true,
     "priorityListing": false,
-    "listingMarketplaceId": "EBAY_US"
+    "listingMarketplaceId": "EBAY_US",
+    "alreadyPosted": true
   },
   {
     "itemId": "v1|167890304215|0",
@@ -2474,7 +2476,8 @@
     "itemCreationDate": "2025-10-28T12:55:20.000Z",
     "topRatedBuyingExperience": false,
     "priorityListing": false,
-    "listingMarketplaceId": "EBAY_US"
+    "listingMarketplaceId": "EBAY_US",
+    "alreadyPosted": true
   },
   {
     "itemId": "v1|336256978784|0",
@@ -2596,7 +2599,8 @@
     "itemEndDate": "2025-11-04T12:37:05.000Z",
     "topRatedBuyingExperience": false,
     "priorityListing": false,
-    "listingMarketplaceId": "EBAY_GB"
+    "listingMarketplaceId": "EBAY_GB",
+    "alreadyPosted": true
   },
   {
     "itemId": "v1|397202634523|0",
@@ -2696,7 +2700,8 @@
     "itemCreationDate": "2025-10-28T11:46:49.000Z",
     "topRatedBuyingExperience": false,
     "priorityListing": false,
-    "listingMarketplaceId": "EBAY_US"
+    "listingMarketplaceId": "EBAY_US",
+    "alreadyPosted": true
   },
   {
     "itemId": "v1|236420312516|0",
@@ -2809,6 +2814,120 @@
     "itemCreationDate": "2025-10-28T11:27:10.000Z",
     "topRatedBuyingExperience": false,
     "priorityListing": false,
-    "listingMarketplaceId": "EBAY_US"
+    "listingMarketplaceId": "EBAY_US",
+    "alreadyPosted": true
+  },
+  {
+    "itemId": "v1|187691094025|0",
+    "title": "GoPro Hero 4 Silver Accessories Waterproof Case, And so much More",
+    "leafCategoryIds": [
+      "11724"
+    ],
+    "categories": [
+      {
+        "categoryId": "11724",
+        "categoryName": "Camcorders"
+      },
+      {
+        "categoryId": "625",
+        "categoryName": "Cameras & Photo"
+      }
+    ],
+    "image": {
+      "imageUrl": "https://i.ebayimg.com/images/g/tS4AAeSwtdJo2XPU/s-l225.jpg"
+    },
+    "price": {
+      "value": "89.99",
+      "currency": "USD"
+    },
+    "itemHref": "https://api.ebay.com/buy/browse/v1/item/v1%7C187691094025%7C0",
+    "seller": {
+      "username": "fjmerch",
+      "feedbackPercentage": "99.1",
+      "feedbackScore": 699
+    },
+    "condition": "Open box",
+    "conditionId": "1500",
+    "thumbnailImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/tS4AAeSwtdJo2XPU/s-l1600.jpg"
+      }
+    ],
+    "shippingOptions": [
+      {
+        "shippingCostType": "FIXED",
+        "shippingCost": {
+          "value": "0.00",
+          "currency": "USD"
+        },
+        "minEstimatedDeliveryDate": "2025-10-30T07:00:00.000Z",
+        "maxEstimatedDeliveryDate": "2025-11-01T07:00:00.000Z"
+      }
+    ],
+    "buyingOptions": [
+      "FIXED_PRICE",
+      "BEST_OFFER"
+    ],
+    "itemWebUrl": "https://www.ebay.com/itm/187691094025?_skw=gopro+hero&hash=item2bb342d009:g:tS4AAeSwtdJo2XPU",
+    "itemLocation": {
+      "postalCode": "990**",
+      "country": "US"
+    },
+    "additionalImages": [
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/s60AAeSwXbto2XPU/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/hFgAAeSwU95o2XPU/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/jtkAAeSwtgxo2XPU/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/Ym8AAeSwgQZo2XPU/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/jzsAAeSwB~Jo2XPV/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/ZqkAAeSwAupo2XPV/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/jOkAAeSw~nJo2XPV/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/gUgAAeSwFvBo2XPV/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/WL0AAeSwYb1o2XPV/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/hxIAAeSwfrRo2XPW/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/YMcAAeSwLeBo2XPW/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/iIYAAeSw649o2XPW/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/hJUAAeSwtEVo2XPW/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/Z5sAAeSwcGJo2XPW/s-l225.jpg"
+      },
+      {
+        "imageUrl": "https://i.ebayimg.com/images/g/tpsAAeSwSWlo2XQu/s-l225.jpg"
+      }
+    ],
+    "adultOnly": false,
+    "legacyItemId": "187691094025",
+    "availableCoupons": false,
+    "itemOriginDate": "2025-10-28T13:31:32.000Z",
+    "itemCreationDate": "2025-10-28T13:31:32.000Z",
+    "topRatedBuyingExperience": false,
+    "priorityListing": false,
+    "listingMarketplaceId": "EBAY_US",
+    "alreadyPosted": true
   }
 ]
