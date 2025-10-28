@@ -1,0 +1,4 @@
+{
+  "watch": ["script.js"],
+  "ext": "js"
+}
