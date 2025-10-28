@@ -6,9 +6,11 @@ import { keyboard } from 'telegraf/markup';
 import axios from 'axios';
 import LocalSession from 'telegraf-session-local';
 import moment from 'moment';
-
+import 'moment/locale/uk';
 
 dotenv.config();
+
+moment.locale('uk');
 
 const bot = new Telegraf(process.env.BOT_TOKEN)
 
