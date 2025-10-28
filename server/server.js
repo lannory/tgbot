@@ -15,15 +15,18 @@ app.use(express.json());
 const SEARCH_FILE = './searchConfig.json';
 const DATA_FILE = './data.json';
 
+
+const dataPath = path.resolve(__dirname, 'data.json');
+const searchPath = path.resolve(__dirname, 'searchConfig.json')
 let token;
 
 
 async function fetchData(){
 	try{
-		const rawSearch = fs.readFileSync(SEARCH_FILE, 'utf-8');
+		const rawSearch = fs.readFileSync(searchPath, 'utf-8');
 		const searchConfig = JSON.parse(rawSearch);
 
-		const rawData = fs.readFileSync(DATA_FILE,'utf-8');
+		const rawData = fs.readFileSync(dataPath,'utf-8');
 		const oldData = JSON.parse(rawData).map(item => {return {...item, alreadyPosted: true} });
 		const oldDataIds = oldData.map(item => item.itemId);
 
@@ -49,7 +52,7 @@ async function fetchData(){
 
 		console.log(newData)
 
-		fs.writeFileSync(DATA_FILE, JSON.stringify(newData, null, 2), 'utf-8')
+		fs.writeFileSync(dataPath, JSON.stringify(newData, null, 2), 'utf-8')
 	}catch(err){
 		console.log(err);
 	}
@@ -93,13 +96,13 @@ setInterval(() => getToken(), 3600 * 2 * 1000)
 
 app.post('/searchconfig', async(req, res) => {
 	try{
-		const raw = fs.readFileSync(SEARCH_FILE, 'utf-8');
+		const raw = fs.readFileSync(searchPath, 'utf-8');
 		const json = JSON.parse(raw);
 
 		json.searchBy = req.body;
 		console.log('search changed');
 
-		fs.writeFileSync(SEARCH_FILE, JSON.stringify(json), 'utf8');
+		fs.writeFileSync(searchPath, JSON.stringify(json), 'utf8');
 	}
 	catch(err){
 		console.log('err');
@@ -112,7 +115,7 @@ app.post('/searchconfig', async(req, res) => {
 app.get('/data', async(req, res) => {
 	try{
 		fetchData();
-		const raw = fs.readFileSync(DATA_FILE, 'utf-8');
+		const raw = fs.readFileSync(dataPath, 'utf-8');
 		const json = JSON.parse(raw).filter(item => !item.alreadyPosted);
 		// console.log(json)
 

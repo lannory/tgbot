@@ -35,7 +35,7 @@ function showMenu (bot, chatId) {
 
 
 const fetchData = async (bot, chatId, ctx) => {
-	const response = await axios.get(`http://${BACKEND_IP}:300/data`).catch((err) => console.log(err));
+	const response = await axios.get(`http://${BACKEND_IP}:3000/data`).catch((err) => console.log(err));
 	const result = response.data;
 	console.log(result)
 
