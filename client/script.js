@@ -5,12 +5,13 @@ import dotenv from'dotenv';
 import { keyboard } from 'telegraf/markup';
 import axios from 'axios';
 import LocalSession from 'telegraf-session-local';
-import moment from 'moment';
-import 'moment/locale/uk';
+import moment from 'moment-timezone';
+
+
 
 dotenv.config();
 
-moment.locale('uk');
+
 
 const bot = new Telegraf(process.env.BOT_TOKEN)
 
@@ -58,7 +59,7 @@ const postData = (bot, chatId, data) => {
 
 
 	modArr.forEach(item => {
-		bot.telegram.sendMessage(chatId, `${item.title} \n ${item.price.value + ' ' + item.price.currency} + Shipping  \n Time: ${moment(item.date).format('LLLL')} \n Seller: ${item.sellerInfo.feedback} % positive orders ${item.sellerInfo.score} \n Condition: ${item.condition} \n	${item.url}`);
+		bot.telegram.sendMessage(chatId, `${item.title} \n ${item.price.value + ' ' + item.price.currency} + Shipping  \n Time: ${moment.utc(item.date).tz('Europe/Kyiv').format('LLLL')} \n Seller: ${item.sellerInfo.feedback} % positive orders ${item.sellerInfo.score} \n Condition: ${item.condition} \n	${item.url}`);
 		
 	});
 	
