@@ -32,6 +32,8 @@ async function fetchData(){
 		const rawSearch = fs.readFileSync(searchPath, 'utf-8');
 		const searchConfig = JSON.parse(rawSearch);
 
+		console.log(searchConfig);
+
 		const rawData = fs.readFileSync(dataPath,'utf-8');
 		const oldData = JSON.parse(rawData).map(item => {return {...item, alreadyPosted: true} });
 		const oldDataIds = oldData.map(item => item.itemId);
@@ -56,7 +58,7 @@ async function fetchData(){
 		
 		const newData = [...oldData, ...data];
 
-		console.log(newData)
+		// console.log(newData)
 
 		fs.writeFileSync(dataPath, JSON.stringify(newData, null, 2), 'utf-8')
 	}catch(err){
@@ -107,8 +109,9 @@ app.post('/searchconfig', async(req, res) => {
 
 		json.searchBy = req.body;
 		console.log('search changed');
+		console.log(json.searchBy);
 
-		fs.writeFileSync(searchPath, JSON.stringify(json), 'utf8');
+		fs.writeFileSync(searchPath, JSON.stringify(json.searchBy), 'utf8');
 	}
 	catch(err){
 		console.log('err');

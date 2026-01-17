@@ -70,16 +70,15 @@ bot.on("message", async (ctx) => {
 	const chatId = ctx.chat.id;
 
 	
-	if(ctx.session.state == 'awaitingSearchText'){
-		const userText = ctx.message.text;
-		console.log(userText);
+	// if(ctx.session.state == 'awaitingSearchText'){
+	// 	const userText = ctx.message.text;
+	// 	console.log(userText);
 
-		await ctx.reply(`Search value was set to ${ctx.session.search}`);
-		ctx.session.state = 'default';
-		await axios.post(`http://${BACKEND_IP}:3000/searchconfig`, {body: userText});
-		console.log(ctx.session.search)
-		return;
-	}
+	// 	await ctx.reply(`Search value was set to ${userText}`);
+	// 	ctx.session.state = 'default';
+	// 	await axios.post(`http://${BACKEND_IP}:3000/searchconfig`, {body: userText});
+	// 	return;
+	// }
 
 	if(ctx.message.text === "menu"){
 		showMenu(bot, chatId);
