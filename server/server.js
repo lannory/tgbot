@@ -1,143 +1,128 @@
+import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
-import fs from 'fs';
-import axios from 'axios';
-import dotenv from 'dotenv';
-import path from 'path';
-import { fileURLToPath } from 'url';
+
+import { init, createSearch, countSearchesByChat, listSearchesByChat, setActive, deleteSearch, popAllNotifications } from './db.js';
+import { ensureToken } from './ebay.js';
+import { startPoller } from './poller.js';
 
 const app = express();
-
-const __filename = fileURLToPath(import.meta.url);
-
-const __dirname = path.dirname(__filename);
-
 const PORT = 3000;
-dotenv.config();
+
+const MAX_SEARCHES_PER_CHAT = Number(process.env.MAX_SEARCHES_PER_CHAT) || 5;
+const CONDITIONS = ['NEW', 'USED'];
+const BUYING_OPTIONS = ['AUCTION', 'FIXED_PRICE'];
 
 app.use(cors());
 app.use(express.json());
 
-const SEARCH_FILE = './searchConfig.json';
-const DATA_FILE = './data.json';
+function parseSearchFilters(body) {
+	const { categoryId, minPrice, maxPrice, condition, buyingOption, usOnly } = body;
 
-
-const dataPath = path.join(__dirname, 'data.json');
-const searchPath = path.join(__dirname, 'searchConfig.json')
-let token;
-
-
-async function fetchData(){
-	try{
-		const rawSearch = fs.readFileSync(searchPath, 'utf-8');
-		const searchConfig = JSON.parse(rawSearch);
-
-		console.log(searchConfig);
-
-		const rawData = fs.readFileSync(dataPath,'utf-8');
-		const oldData = JSON.parse(rawData).map(item => {return {...item, alreadyPosted: true} });
-		const oldDataIds = oldData.map(item => item.itemId);
-
-		const response = await axios.get('https://api.ebay.com/buy/browse/v1/item_summary/search', {
-			params: {
-				q: searchConfig.searchBy,
-				limit: 10,
-				sort: 'newlyListed',
-				category_ids: '11724'
-			},
-			headers: {
-				'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US',
-				Authorization: `Bearer ${token}`
-			}
-		})
-
-		let data = response.data.itemSummaries;
-
-
-		data = data.filter(item => !(oldDataIds.includes(item.itemId)));
-		
-		const newData = [...oldData, ...data];
-
-		// console.log(newData)
-
-		fs.writeFileSync(dataPath, JSON.stringify(newData, null, 2), 'utf-8')
-	}catch(err){
-		console.log(err);
+	if (categoryId != null && typeof categoryId !== 'string' && typeof categoryId !== 'number') {
+		return { error: 'categoryId must be a string or number' };
 	}
-	
-}	
+	if (minPrice != null && (typeof minPrice !== 'number' || Number.isNaN(minPrice))) {
+		return { error: 'minPrice must be a number' };
+	}
+	if (maxPrice != null && (typeof maxPrice !== 'number' || Number.isNaN(maxPrice))) {
+		return { error: 'maxPrice must be a number' };
+	}
+	if (minPrice != null && maxPrice != null && minPrice > maxPrice) {
+		return { error: 'minPrice must not be greater than maxPrice' };
+	}
+	if (condition != null && !CONDITIONS.includes(condition)) {
+		return { error: `condition must be one of ${CONDITIONS.join(', ')}` };
+	}
+	if (buyingOption != null && !BUYING_OPTIONS.includes(buyingOption)) {
+		return { error: `buyingOption must be one of ${BUYING_OPTIONS.join(', ')}` };
+	}
+	if (usOnly != null && typeof usOnly !== 'boolean') {
+		return { error: 'usOnly must be a boolean' };
+	}
 
-const clientId = process.env.EBAY_CLIENT_ID;
-const clientSecret = process.env.EBAY_CLIENT_SECRET;
-
-
-// console.log(clientId, clientSecret)
-
-export async function getToken() {
-
-  const base64Credentials = Buffer.from(`${clientId}:${clientSecret}`).toString("base64");
-
-  
-  const response = await axios.post(
-    "https://api.ebay.com/identity/v1/oauth2/token",
-    new URLSearchParams({
-      grant_type: "client_credentials",
-      scope: "https://api.ebay.com/oauth/api_scope",
-    }),
-    {
-      headers: {
-        "Content-Type": "application/x-www-form-urlencoded",
-        Authorization: `Basic ${base64Credentials}`,
-      },
-    }
-  );
-
-  token = response.data.access_token;
-
-  console.log(token);
+	return {
+		filters: {
+			categoryId: categoryId != null ? String(categoryId) : null,
+			minPrice: minPrice ?? null,
+			maxPrice: maxPrice ?? null,
+			condition: condition ?? null,
+			buyingOption: buyingOption ?? null,
+			usOnly: usOnly ?? false,
+		},
+	};
 }
 
+app.post('/searches', async (req, res) => {
+	const { chatId, query } = req.body;
 
-
-
-setInterval(() => getToken(), 3600 * 2 * 1000)
-
-app.post('/searchconfig', async(req, res) => {
-	try{
-		const raw = fs.readFileSync(searchPath, 'utf-8');
-		const json = JSON.parse(raw);
-
-		json.searchBy = req.body;
-		console.log('search changed');
-		console.log(json.searchBy);
-
-		fs.writeFileSync(searchPath, JSON.stringify(json.searchBy), 'utf8');
+	if (!chatId || typeof query !== 'string' || !query.trim()) {
+		return res.status(400).json({ error: 'chatId and query are required' });
 	}
-	catch(err){
-		console.log('err');
+
+	const { filters, error } = parseSearchFilters(req.body);
+	if (error) {
+		return res.status(400).json({ error });
 	}
+
+	const count = await countSearchesByChat(String(chatId));
+	if (count >= MAX_SEARCHES_PER_CHAT) {
+		return res.status(400).json({ error: `Max ${MAX_SEARCHES_PER_CHAT} searches per chat` });
+	}
+
+	const search = await createSearch(String(chatId), { query: query.trim(), ...filters });
+	res.status(201).json(search);
 });
 
+app.get('/searches', async (req, res) => {
+	const { chatId } = req.query;
 
-
-
-app.get('/data', async(req, res) => {
-	try{
-		fetchData();
-		const raw = fs.readFileSync(dataPath, 'utf-8');
-		const json = JSON.parse(raw).filter(item => !item.alreadyPosted);
-		// console.log(json)
-
-		res.json(json);
-	}catch(err){
-		res.status(500);
+	if (!chatId) {
+		return res.status(400).json({ error: 'chatId is required' });
 	}
-})
 
+	const searches = await listSearchesByChat(String(chatId));
+	res.json(searches);
+});
+
+app.patch('/searches/:id', async (req, res) => {
+	const { chatId, active } = req.body;
+
+	if (!chatId || typeof active !== 'boolean' || !Number.isInteger(Number(req.params.id))) {
+		return res.status(400).json({ error: 'chatId and active are required' });
+	}
+
+	const search = await setActive(req.params.id, String(chatId), active);
+	if (!search) {
+		return res.status(404).json({ error: 'Search not found' });
+	}
+
+	res.json(search);
+});
+
+app.delete('/searches/:id', async (req, res) => {
+	const { chatId } = req.query;
+
+	if (!chatId || !Number.isInteger(Number(req.params.id))) {
+		return res.status(400).json({ error: 'chatId is required' });
+	}
+
+	const search = await deleteSearch(req.params.id, String(chatId));
+	if (!search) {
+		return res.status(404).json({ error: 'Search not found' });
+	}
+
+	res.json(search);
+});
+
+app.get('/notifications/all', async (req, res) => {
+	const groups = await popAllNotifications();
+	res.json(groups);
+});
 
 app.listen(PORT, async () => {
-	console.log('server started, port' + PORT);
-	await getToken();
-	await fetchData();
-	// 
+	console.log('server started, port ' + PORT);
+	await init();
+	await ensureToken();
+	startPoller();
 });

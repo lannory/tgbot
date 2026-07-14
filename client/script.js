@@ -1,102 +1,292 @@
 import { Telegraf } from 'telegraf'
-import { message } from 'telegraf/filters'
-import path from 'path'
-import dotenv from'dotenv';
-import { keyboard } from 'telegraf/markup';
+import dotenv from 'dotenv';
 import axios from 'axios';
 import LocalSession from 'telegraf-session-local';
 import moment from 'moment-timezone';
 
-
-
 dotenv.config();
 
-
-
 const bot = new Telegraf(process.env.BOT_TOKEN)
-
 
 bot.use(new LocalSession({ database: 'sessions.json' }).middleware());
 
 const BACKEND_IP = process.env.BACKEND_IP;
+const BACKEND_URL = `http://${BACKEND_IP}:3000`;
+const NOTIFICATION_POLL_INTERVAL_MS = Number(process.env.NOTIFICATION_POLL_INTERVAL_MS) || 20000;
 
-bot.start(ctx => ctx.reply(ctx.message.from.username + 'hello'));
+const SKIP = "⏭ Пропустити";
+const CANCEL = "❌ Скасувати";
 
+const mainMenu = {
+	reply_markup: {
+		keyboard: [
+			["➕ Додати пошук", "📋 Мої пошуки"]
+		],
+		resize_keyboard: true
+	}
+};
 
-
-
-
-function showMenu (bot, chatId) {
-	bot.telegram.sendMessage(chatId, "Choose action", {
-		reply_markup: {
-			keyboard: [
-				[
-					"Select search", "Search", "Close menu"
-				]
-			]
-		}
-	})
+function skipCancelKeyboard() {
+	return { reply_markup: { keyboard: [[SKIP], [CANCEL]], resize_keyboard: true } };
 }
 
+function cancelOnlyKeyboard() {
+	return { reply_markup: { keyboard: [[CANCEL]], resize_keyboard: true } };
+}
 
-const fetchData = async (bot, chatId, ctx) => {
-	const response = await axios.get(`http://${BACKEND_IP}:3000/data`).catch((err) => console.log(err));
-	const result = response.data;
-	console.log(result)
+function conditionKeyboard() {
+	return {
+		reply_markup: {
+			inline_keyboard: [
+				[{ text: 'Нові', callback_data: 'cond:NEW' }, { text: 'Вживані', callback_data: 'cond:USED' }],
+				[{ text: 'Будь-який', callback_data: 'cond:any' }]
+			]
+		}
+	};
+}
 
-	postData(bot, chatId, result);
-};
+function buyingOptionKeyboard() {
+	return {
+		reply_markup: {
+			inline_keyboard: [
+				[{ text: 'Аукціон', callback_data: 'buy:AUCTION' }, { text: 'Фіксована ціна', callback_data: 'buy:FIXED_PRICE' }],
+				[{ text: 'Будь-який', callback_data: 'buy:any' }]
+			]
+		}
+	};
+}
 
-const postData = (bot, chatId, data) => {
-	const modArr = data.map(({title, seller, itemWebUrl, price, condition, itemCreationDate}) => {; return {
-		title, 
-		sellerInfo: {feedback: seller.feedbackPercentage, score: seller.feedbackScore},
-		url: itemWebUrl,
-		price,
-		condition,
-		date: itemCreationDate
-	}});
+function locationKeyboard() {
+	return {
+		reply_markup: {
+			inline_keyboard: [
+				[{ text: 'Тільки США', callback_data: 'loc:us' }, { text: 'Будь-яка', callback_data: 'loc:any' }]
+			]
+		}
+	};
+}
 
+function showMenu(ctx) {
+	ctx.reply("Оберіть дію", mainMenu);
+}
 
-	modArr.forEach(item => {
-		bot.telegram.sendMessage(chatId, `${item.title} \n ${item.price.value + ' ' + item.price.currency} + Shipping  \n Time: ${moment.utc(item.date).tz('Europe/Kyiv').format('LLLL')} \n Seller: ${item.sellerInfo.feedback} % positive orders ${item.sellerInfo.score} \n Condition: ${item.condition} \n	${item.url}`);
-		
-	});
-	
-};
+function formatItem(item) {
+	return `${item.title} \n ${item.price.value + ' ' + item.price.currency} + Shipping  \n Time: ${moment.utc(item.itemCreationDate).tz('Europe/Kyiv').format('LLLL')} \n Seller: ${item.seller.feedbackPercentage} % positive orders ${item.seller.feedbackScore} \n Condition: ${item.condition} \n	${item.itemWebUrl}`;
+}
 
+function describeSearch(search) {
+	const parts = [search.query];
 
-bot.on("message", async (ctx) => {
+	if (search.category_id) parts.push(`категорія ${search.category_id}`);
+	if (search.min_price != null || search.max_price != null) {
+		const min = search.min_price != null ? search.min_price : '';
+		const max = search.max_price != null ? search.max_price : '';
+		parts.push(`$${min}-${max}`);
+	}
+	if (search.condition) parts.push(search.condition === 'NEW' ? 'нові' : 'вживані');
+	if (search.buying_option) parts.push(search.buying_option === 'AUCTION' ? 'аукціон' : 'фікс. ціна');
+	if (search.us_only) parts.push('тільки США');
+
+	return parts.join(' | ');
+}
+
+function searchButtons(search) {
+	return {
+		inline_keyboard: [
+			[
+				search.active
+					? { text: '⏸ Пауза', callback_data: `toggle:${search.id}:${search.active}` }
+					: { text: '▶ Відновити', callback_data: `toggle:${search.id}:${search.active}` },
+				{ text: '🗑 Видалити', callback_data: `del:${search.id}` }
+			]
+		]
+	};
+}
+
+async function sendMySearches(ctx) {
+	const chatId = ctx.chat.id;
+	const { data: searches } = await axios.get(`${BACKEND_URL}/searches`, { params: { chatId } });
+
+	if (searches.length === 0) {
+		await ctx.reply("У вас поки немає пошуків. Натисніть \"➕ Додати пошук\", щоб створити.");
+		return;
+	}
+
+	for (const search of searches) {
+		const status = search.active ? '🟢' : '⏸';
+		await ctx.reply(`${status} ${describeSearch(search)}`, { reply_markup: searchButtons(search) });
+	}
+}
+
+async function cancelWizard(ctx) {
+	ctx.session.state = 'default';
+	ctx.session.draft = {};
+	await ctx.reply("Скасовано", mainMenu);
+}
+
+async function finishWizard(ctx) {
+	try {
+		const { data: search } = await axios.post(`${BACKEND_URL}/searches`, { chatId: ctx.chat.id, ...ctx.session.draft });
+		await ctx.reply(`Пошук додано:\n${describeSearch(search)}`, mainMenu);
+	} catch (err) {
+		const message = err.response?.data?.error || 'Не вдалося додати пошук';
+		await ctx.reply(message, mainMenu);
+	}
+	ctx.session.state = 'default';
+	ctx.session.draft = {};
+}
+
+bot.start(ctx => {
+	ctx.reply(`Привіт, ${ctx.message.from.username}! Цей бот моніторить нові оголошення на eBay за вашими пошуковими запитами.`);
+	showMenu(ctx);
+});
+
+bot.hears("➕ Додати пошук", async (ctx) => {
+	ctx.session.draft = {};
+	ctx.session.state = "awaitingQuery";
+	await ctx.reply("Введіть пошуковий запит:", cancelOnlyKeyboard());
+});
+
+bot.hears("📋 Мої пошуки", async (ctx) => {
+	await sendMySearches(ctx);
+});
+
+bot.action(/^toggle:(\d+):(true|false)$/, async (ctx) => {
+	const id = ctx.match[1];
+	const currentActive = ctx.match[2] === 'true';
 	const chatId = ctx.chat.id;
 
-	
-	// if(ctx.session.state == 'awaitingSearchText'){
-	// 	const userText = ctx.message.text;
-	// 	console.log(userText);
-
-	// 	await ctx.reply(`Search value was set to ${userText}`);
-	// 	ctx.session.state = 'default';
-	// 	await axios.post(`http://${BACKEND_IP}:3000/searchconfig`, {body: userText});
-	// 	return;
-	// }
-
-	if(ctx.message.text === "menu"){
-		showMenu(bot, chatId);
-	}else if (ctx.message.text === "Select search"){
-		ctx.session.state = "awaitingSearchText";
-		await ctx.reply("Enter search text:");
-		console.log('set')
+	try {
+		const { data: search } = await axios.patch(`${BACKEND_URL}/searches/${id}`, { chatId, active: !currentActive });
+		await ctx.editMessageReplyMarkup(searchButtons(search));
+		await ctx.answerCbQuery(search.active ? 'Відновлено' : 'Призупинено');
+	} catch (err) {
+		await ctx.answerCbQuery('Не вдалося оновити пошук');
 	}
-	else if(ctx.message.text === 'Search'){
-		fetchData(bot, chatId, ctx);
-		setInterval(() => fetchData(bot, chatId, ctx), 60000);
+});
+
+bot.action(/^del:(\d+)$/, async (ctx) => {
+	const id = ctx.match[1];
+	const chatId = ctx.chat.id;
+
+	try {
+		await axios.delete(`${BACKEND_URL}/searches/${id}`, { params: { chatId } });
+		await ctx.editMessageText('🗑 Пошук видалено');
+		await ctx.answerCbQuery('Видалено');
+	} catch (err) {
+		await ctx.answerCbQuery('Не вдалося видалити пошук');
 	}
-	
+});
+
+bot.action(/^cond:(NEW|USED|any)$/, async (ctx) => {
+	await ctx.answerCbQuery();
+	if (ctx.session.state !== 'awaitingCondition') return;
+
+	const value = ctx.match[1];
+	if (value !== 'any') ctx.session.draft.condition = value;
+
+	await ctx.editMessageText(`Стан: ${value === 'any' ? 'будь-який' : value === 'NEW' ? 'нові' : 'вживані'}`);
+	ctx.session.state = 'awaitingBuyingOption';
+	await ctx.reply("Тип продажу:", buyingOptionKeyboard());
+});
+
+bot.action(/^buy:(AUCTION|FIXED_PRICE|any)$/, async (ctx) => {
+	await ctx.answerCbQuery();
+	if (ctx.session.state !== 'awaitingBuyingOption') return;
+
+	const value = ctx.match[1];
+	if (value !== 'any') ctx.session.draft.buyingOption = value;
+
+	await ctx.editMessageText(`Тип продажу: ${value === 'any' ? 'будь-який' : value === 'AUCTION' ? 'аукціон' : 'фіксована ціна'}`);
+	ctx.session.state = 'awaitingLocation';
+	await ctx.reply("Локація товару:", locationKeyboard());
+});
+
+bot.action(/^loc:(us|any)$/, async (ctx) => {
+	await ctx.answerCbQuery();
+	if (ctx.session.state !== 'awaitingLocation') return;
+
+	const value = ctx.match[1];
+	ctx.session.draft.usOnly = value === 'us';
+
+	await ctx.editMessageText(`Локація: ${value === 'us' ? 'тільки США' : 'будь-яка'}`);
+	await finishWizard(ctx);
+});
+
+bot.on("message", async (ctx) => {
+	const state = ctx.session.state;
+	const text = ctx.message.text;
+
+	if (text === CANCEL && state && state.startsWith('awaiting')) {
+		await cancelWizard(ctx);
+		return;
+	}
+
+	if (state === 'awaitingQuery' && text) {
+		ctx.session.draft.query = text;
+		ctx.session.state = 'awaitingCategory';
+		await ctx.reply("Введіть ID категорії eBay (наприклад, 11724) або пропустіть:", skipCancelKeyboard());
+		return;
+	}
+
+	if (state === 'awaitingCategory' && text) {
+		if (text !== SKIP) ctx.session.draft.categoryId = text.trim();
+		ctx.session.state = 'awaitingMinPrice';
+		await ctx.reply("Мінімальна ціна, $ (або пропустіть):", skipCancelKeyboard());
+		return;
+	}
+
+	if (state === 'awaitingMinPrice' && text) {
+		if (text !== SKIP) {
+			const value = Number(text);
+			if (Number.isNaN(value)) {
+				await ctx.reply("Введіть число або натисніть \"Пропустити\"");
+				return;
+			}
+			ctx.session.draft.minPrice = value;
+		}
+		ctx.session.state = 'awaitingMaxPrice';
+		await ctx.reply("Максимальна ціна, $ (або пропустіть):", skipCancelKeyboard());
+		return;
+	}
+
+	if (state === 'awaitingMaxPrice' && text) {
+		if (text !== SKIP) {
+			const value = Number(text);
+			if (Number.isNaN(value)) {
+				await ctx.reply("Введіть число або натисніть \"Пропустити\"");
+				return;
+			}
+			ctx.session.draft.maxPrice = value;
+		}
+		ctx.session.state = 'awaitingCondition';
+		await ctx.reply("Стан товару:", conditionKeyboard());
+		return;
+	}
+
+	if (ctx.message.text === "menu" || ctx.message.text === "/menu") {
+		showMenu(ctx);
+	}
 })
 
+function startNotificationPoller() {
+	setInterval(async () => {
+		try {
+			const { data: groups } = await axios.get(`${BACKEND_URL}/notifications/all`);
+			for (const { chatId, items } of groups) {
+				for (const item of items) {
+					await bot.telegram.sendMessage(chatId, formatItem(item));
+				}
+			}
+		} catch (err) {
+			console.log('notification poll failed', err.message);
+		}
+	}, NOTIFICATION_POLL_INTERVAL_MS);
+}
+
 bot.launch()
+startNotificationPoller();
 
 // Enable graceful stop
 process.once('SIGINT', () => bot.stop('SIGINT'))
 process.once('SIGTERM', () => bot.stop('SIGTERM'))
-
