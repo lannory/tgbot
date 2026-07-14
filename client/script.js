@@ -103,6 +103,26 @@ function searchButtons(search) {
 	};
 }
 
+async function sendCategoryChoices(ctx, query) {
+	let suggestions = [];
+	try {
+		const { data } = await axios.get(`${BACKEND_URL}/categories/suggest`, { params: { q: query } });
+		suggestions = data;
+	} catch (err) {
+		console.log('category suggestion fetch failed', err.message);
+	}
+
+	const labels = {};
+	const buttons = suggestions.map((s) => {
+		labels[s.categoryId] = s.parentName ? `${s.categoryName} (${s.parentName})` : s.categoryName;
+		return [{ text: labels[s.categoryId], callback_data: `cat:${s.categoryId}` }];
+	});
+	buttons.push([{ text: 'Усі категорії', callback_data: 'cat:any' }]);
+
+	ctx.session.categoryLabels = labels;
+	await ctx.reply("Оберіть категорію:", { reply_markup: { inline_keyboard: buttons } });
+}
+
 async function sendMySearches(ctx) {
 	const chatId = ctx.chat.id;
 	const { data: searches } = await axios.get(`${BACKEND_URL}/searches`, { params: { chatId } });
@@ -121,6 +141,7 @@ async function sendMySearches(ctx) {
 async function cancelWizard(ctx) {
 	ctx.session.state = 'default';
 	ctx.session.draft = {};
+	ctx.session.categoryLabels = {};
 	await ctx.reply("Скасовано", mainMenu);
 }
 
@@ -134,6 +155,7 @@ async function finishWizard(ctx) {
 	}
 	ctx.session.state = 'default';
 	ctx.session.draft = {};
+	ctx.session.categoryLabels = {};
 }
 
 bot.start(ctx => {
@@ -176,6 +198,24 @@ bot.action(/^del:(\d+)$/, async (ctx) => {
 	} catch (err) {
 		await ctx.answerCbQuery('Не вдалося видалити пошук');
 	}
+});
+
+bot.action(/^cat:(.+)$/, async (ctx) => {
+	await ctx.answerCbQuery();
+	if (ctx.session.state !== 'awaitingCategory') return;
+
+	const value = ctx.match[1];
+	let label;
+	if (value === 'any') {
+		label = 'усі категорії';
+	} else {
+		ctx.session.draft.categoryId = value;
+		label = ctx.session.categoryLabels?.[value] ?? value;
+	}
+
+	await ctx.editMessageText(`Категорія: ${label}`);
+	ctx.session.state = 'awaitingMinPrice';
+	await ctx.reply("Мінімальна ціна, $ (або пропустіть):", skipCancelKeyboard());
 });
 
 bot.action(/^cond:(NEW|USED|any)$/, async (ctx) => {
@@ -225,14 +265,7 @@ bot.on("message", async (ctx) => {
 	if (state === 'awaitingQuery' && text) {
 		ctx.session.draft.query = text;
 		ctx.session.state = 'awaitingCategory';
-		await ctx.reply("Введіть ID категорії eBay (наприклад, 11724) або пропустіть:", skipCancelKeyboard());
-		return;
-	}
-
-	if (state === 'awaitingCategory' && text) {
-		if (text !== SKIP) ctx.session.draft.categoryId = text.trim();
-		ctx.session.state = 'awaitingMinPrice';
-		await ctx.reply("Мінімальна ціна, $ (або пропустіть):", skipCancelKeyboard());
+		await sendCategoryChoices(ctx, text);
 		return;
 	}
 

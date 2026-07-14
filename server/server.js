@@ -3,7 +3,7 @@ import express from 'express';
 import cors from 'cors';
 
 import { init, createSearch, countSearchesByChat, listSearchesByChat, setActive, deleteSearch, popAllNotifications } from './db.js';
-import { ensureToken } from './ebay.js';
+import { ensureToken, getCategorySuggestions } from './ebay.js';
 import { startPoller } from './poller.js';
 
 const app = express();
@@ -113,6 +113,21 @@ app.delete('/searches/:id', async (req, res) => {
 	}
 
 	res.json(search);
+});
+
+app.get('/categories/suggest', async (req, res) => {
+	const { q } = req.query;
+
+	if (!q || typeof q !== 'string') {
+		return res.status(400).json({ error: 'q is required' });
+	}
+
+	try {
+		const suggestions = await getCategorySuggestions(q);
+		res.json(suggestions.slice(0, 6));
+	} catch (err) {
+		res.status(502).json({ error: 'Failed to fetch category suggestions' });
+	}
 });
 
 app.get('/notifications/all', async (req, res) => {

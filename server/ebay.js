@@ -84,3 +84,22 @@ export async function searchEbay(search) {
 
 	return response.data.itemSummaries ?? [];
 }
+
+export async function getCategorySuggestions(query) {
+	await ensureToken();
+
+	const response = await axios.get(
+		'https://api.ebay.com/commerce/taxonomy/v1/category_tree/0/get_category_suggestions',
+		{
+			params: { q: query },
+			headers: { Authorization: `Bearer ${token}` },
+		}
+	);
+
+	const suggestions = response.data.categorySuggestions ?? [];
+	return suggestions.map((s) => ({
+		categoryId: s.category.categoryId,
+		categoryName: s.category.categoryName,
+		parentName: s.categoryTreeNodeAncestors?.[0]?.categoryName ?? null,
+	}));
+}

@@ -3,8 +3,16 @@
     {
       "id": "566001530:566001530",
       "data": {
-        "state": "awaitingSearchText",
-        "search": "Gopro hero"
+        "state": "default",
+        "search": "Gopro hero",
+        "draft": {}
+      }
+    },
+    {
+      "id": "6881466437:6881466437",
+      "data": {
+        "draft": {},
+        "state": "default"
       }
     }
   ]
