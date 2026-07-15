@@ -2,9 +2,11 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 
-import { init, createSearch, countSearchesByChat, listSearchesByChat, setActive, deleteSearch, popAllNotifications } from './db.js';
-import { ensureToken, getCategorySuggestions } from './ebay.js';
+import { init, createSearch, countSearchesByChat, listSearchesByChat, setActive, deleteSearch, popAllNotifications, createSnipe, listSnipesByChat, cancelSnipe } from './db.js';
+import { ensureToken, getCategorySuggestions, getItemDetails } from './ebay.js';
+import { getConsentUrl, exchangeCode, isLinked } from './ebay-auth.js';
 import { startPoller } from './poller.js';
+import { startSniper } from './sniper.js';
 
 const app = express();
 const PORT = 3000;
@@ -140,9 +142,112 @@ app.get('/notifications/all', async (req, res) => {
 	res.json(groups);
 });
 
+// --- bid sniper (owner-only v1) ---
+
+const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
+
+function requireAdmin(chatId, res) {
+	if (!ADMIN_CHAT_ID || String(chatId) !== ADMIN_CHAT_ID) {
+		res.status(403).json({ error: 'Sniper is not available for this chat' });
+		return false;
+	}
+	return true;
+}
+
+app.get('/auth/ebay/url', async (req, res) => {
+	const { chatId } = req.query;
+	if (!requireAdmin(chatId, res)) return;
+
+	res.json({ url: getConsentUrl(), linked: await isLinked(String(chatId)) });
+});
+
+app.post('/auth/ebay/code', async (req, res) => {
+	const { chatId, code } = req.body;
+	if (!requireAdmin(chatId, res)) return;
+
+	if (!code || typeof code !== 'string') {
+		return res.status(400).json({ error: 'code is required' });
+	}
+
+	try {
+		await exchangeCode(String(chatId), decodeURIComponent(code.trim()));
+		res.json({ linked: true });
+	} catch (err) {
+		const detail = err.response?.data?.error_description || err.message;
+		res.status(400).json({ error: `Failed to link eBay account: ${detail}` });
+	}
+});
+
+app.post('/snipes', async (req, res) => {
+	const { chatId, itemId, maxBid } = req.body;
+	if (!requireAdmin(chatId, res)) return;
+
+	if (!itemId || typeof maxBid !== 'number' || Number.isNaN(maxBid) || maxBid <= 0) {
+		return res.status(400).json({ error: 'itemId and a positive maxBid are required' });
+	}
+
+	if (!(await isLinked(String(chatId)))) {
+		return res.status(400).json({ error: 'eBay account is not linked' });
+	}
+
+	let item;
+	try {
+		item = await getItemDetails(String(itemId));
+	} catch (err) {
+		return res.status(400).json({ error: 'Item not found on eBay' });
+	}
+
+	if (!item.buyingOptions.includes('AUCTION')) {
+		return res.status(400).json({ error: 'Item is not an auction' });
+	}
+	if (!item.endTime || new Date(item.endTime) <= new Date()) {
+		return res.status(400).json({ error: 'Auction has already ended' });
+	}
+
+	const currentBid = item.currentBidPrice?.value != null ? Number(item.currentBidPrice.value) : null;
+	if (currentBid != null && maxBid <= currentBid) {
+		return res.status(400).json({ error: `Max bid must exceed the current bid (${currentBid} ${item.currentBidPrice.currency})` });
+	}
+
+	const snipe = await createSnipe(String(chatId), {
+		itemId: item.itemId,
+		legacyItemId: item.legacyItemId,
+		title: item.title,
+		endTime: item.endTime,
+		maxBid,
+		currency: item.currentBidPrice?.currency ?? 'USD',
+	});
+
+	res.status(201).json(snipe);
+});
+
+app.get('/snipes', async (req, res) => {
+	const { chatId } = req.query;
+	if (!requireAdmin(chatId, res)) return;
+
+	res.json(await listSnipesByChat(String(chatId)));
+});
+
+app.delete('/snipes/:id', async (req, res) => {
+	const { chatId } = req.query;
+	if (!requireAdmin(chatId, res)) return;
+
+	if (!Number.isInteger(Number(req.params.id))) {
+		return res.status(400).json({ error: 'invalid snipe id' });
+	}
+
+	const snipe = await cancelSnipe(req.params.id, String(chatId));
+	if (!snipe) {
+		return res.status(404).json({ error: 'Pending snipe not found' });
+	}
+
+	res.json(snipe);
+});
+
 app.listen(PORT, async () => {
 	console.log('server started, port ' + PORT);
 	await init();
 	await ensureToken();
 	startPoller();
+	startSniper();
 });

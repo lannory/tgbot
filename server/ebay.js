@@ -85,6 +85,100 @@ export async function searchEbay(search) {
 	return response.data.itemSummaries ?? [];
 }
 
+export async function getItemDetails(itemId) {
+	await ensureToken();
+
+	const isLegacyId = /^\d+$/.test(String(itemId));
+	const url = isLegacyId
+		? `https://api.ebay.com/buy/browse/v1/item/get_item_by_legacy_id?legacy_item_id=${itemId}`
+		: `https://api.ebay.com/buy/browse/v1/item/${encodeURIComponent(itemId)}`;
+
+	const response = await axios.get(url, {
+		headers: {
+			'X-EBAY-C-MARKETPLACE-ID': 'EBAY_US',
+			Authorization: `Bearer ${token}`,
+		},
+	});
+
+	const item = response.data;
+	return {
+		itemId: item.itemId,
+		legacyItemId: item.legacyItemId,
+		title: item.title,
+		endTime: item.itemEndDate ?? null,
+		buyingOptions: item.buyingOptions ?? [],
+		currentBidPrice: item.currentBidPrice ?? item.price ?? null,
+		itemWebUrl: item.itemWebUrl,
+	};
+}
+
+function xmlEscape(value) {
+	return String(value).replace(/[<>&'"]/g, (c) => ({
+		'<': '&lt;', '>': '&gt;', '&': '&amp;', "'": '&apos;', '"': '&quot;',
+	}[c]));
+}
+
+export async function placeBid({ legacyItemId, maxBid, currency, accessToken }) {
+	const body = `<?xml version="1.0" encoding="utf-8"?>
+<PlaceOfferRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+	<ItemID>${xmlEscape(legacyItemId)}</ItemID>
+	<Offer>
+		<Action>Bid</Action>
+		<MaxBid currencyID="${xmlEscape(currency)}">${xmlEscape(maxBid)}</MaxBid>
+		<Quantity>1</Quantity>
+	</Offer>
+	<ErrorLanguage>en_US</ErrorLanguage>
+</PlaceOfferRequest>`;
+
+	const response = await axios.post('https://api.ebay.com/ws/api.dll', body, {
+		headers: {
+			'Content-Type': 'text/xml',
+			'X-EBAY-API-CALL-NAME': 'PlaceOffer',
+			'X-EBAY-API-COMPATIBILITY-LEVEL': '1119',
+			'X-EBAY-API-SITEID': '0',
+			'X-EBAY-API-IAF-TOKEN': accessToken,
+		},
+	});
+
+	const xml = response.data;
+	const ack = xml.match(/<Ack>([^<]+)<\/Ack>/)?.[1];
+
+	if (ack !== 'Success' && ack !== 'Warning') {
+		const errors = [...xml.matchAll(/<LongMessage>([^<]+)<\/LongMessage>/g)]
+			.map((m) => m[1])
+			.join('; ');
+		throw new Error(errors || `PlaceOffer failed (Ack: ${ack ?? 'unknown'})`);
+	}
+
+	return {
+		ack,
+		sellingState: xml.match(/<SellingState>([^<]+)<\/SellingState>/)?.[1] ?? null,
+		currentPrice: xml.match(/<CurrentPrice[^>]*>([^<]+)<\/CurrentPrice>/)?.[1] ?? null,
+	};
+}
+
+export async function getWonItemIds(accessToken) {
+	const body = `<?xml version="1.0" encoding="utf-8"?>
+<GetMyeBayBuyingRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+	<WonList>
+		<Include>true</Include>
+		<DurationInDays>2</DurationInDays>
+	</WonList>
+</GetMyeBayBuyingRequest>`;
+
+	const response = await axios.post('https://api.ebay.com/ws/api.dll', body, {
+		headers: {
+			'Content-Type': 'text/xml',
+			'X-EBAY-API-CALL-NAME': 'GetMyeBayBuying',
+			'X-EBAY-API-COMPATIBILITY-LEVEL': '1119',
+			'X-EBAY-API-SITEID': '0',
+			'X-EBAY-API-IAF-TOKEN': accessToken,
+		},
+	});
+
+	return [...String(response.data).matchAll(/<ItemID>(\d+)<\/ItemID>/g)].map((m) => m[1]);
+}
+
 export async function getCategorySuggestions(query) {
 	await ensureToken();
 
