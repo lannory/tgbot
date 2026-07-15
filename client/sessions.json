@@ -5,14 +5,16 @@
       "data": {
         "state": "default",
         "search": "Gopro hero",
-        "draft": {}
+        "draft": {},
+        "categoryLabels": {}
       }
     },
     {
       "id": "6881466437:6881466437",
       "data": {
         "draft": {},
-        "state": "default"
+        "state": "default",
+        "categoryLabels": {}
       }
     }
   ]

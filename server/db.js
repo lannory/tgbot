@@ -12,6 +12,7 @@ export async function init() {
 			id SERIAL PRIMARY KEY,
 			chat_id TEXT NOT NULL,
 			query TEXT NOT NULL,
+			source TEXT NOT NULL DEFAULT 'ebay',
 			category_id TEXT,
 			min_price NUMERIC,
 			max_price NUMERIC,
@@ -19,15 +20,18 @@ export async function init() {
 			buying_option TEXT,
 			us_only BOOLEAN NOT NULL DEFAULT false,
 			active BOOLEAN NOT NULL DEFAULT true,
-			created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+			created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+			last_item_created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 		);
 
+		ALTER TABLE searches ADD COLUMN IF NOT EXISTS source TEXT NOT NULL DEFAULT 'ebay';
 		ALTER TABLE searches ADD COLUMN IF NOT EXISTS category_id TEXT;
 		ALTER TABLE searches ADD COLUMN IF NOT EXISTS min_price NUMERIC;
 		ALTER TABLE searches ADD COLUMN IF NOT EXISTS max_price NUMERIC;
 		ALTER TABLE searches ADD COLUMN IF NOT EXISTS condition TEXT;
 		ALTER TABLE searches ADD COLUMN IF NOT EXISTS buying_option TEXT;
 		ALTER TABLE searches ADD COLUMN IF NOT EXISTS us_only BOOLEAN NOT NULL DEFAULT false;
+		ALTER TABLE searches ADD COLUMN IF NOT EXISTS last_item_created_at TIMESTAMPTZ NOT NULL DEFAULT now();
 
 		CREATE TABLE IF NOT EXISTS seen_items (
 			search_id INTEGER NOT NULL REFERENCES searches(id) ON DELETE CASCADE,
@@ -53,6 +57,7 @@ export async function countSearchesByChat(chatId) {
 export async function createSearch(chatId, filters) {
 	const {
 		query,
+		source = 'ebay',
 		categoryId = null,
 		minPrice = null,
 		maxPrice = null,
@@ -62,9 +67,9 @@ export async function createSearch(chatId, filters) {
 	} = filters;
 
 	const { rows } = await pool.query(
-		`INSERT INTO searches (chat_id, query, category_id, min_price, max_price, condition, buying_option, us_only)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8) RETURNING *`,
-		[chatId, query, categoryId, minPrice, maxPrice, condition, buyingOption, usOnly]
+		`INSERT INTO searches (chat_id, query, source, category_id, min_price, max_price, condition, buying_option, us_only)
+		 VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) RETURNING *`,
+		[chatId, query, source, categoryId, minPrice, maxPrice, condition, buyingOption, usOnly]
 	);
 	return rows[0];
 }
@@ -113,6 +118,13 @@ export async function markSeen(searchId, itemId) {
 	);
 }
 
+export async function advanceLastItemCreatedAt(searchId, timestamp) {
+	await pool.query(
+		'UPDATE searches SET last_item_created_at = GREATEST(last_item_created_at, $2) WHERE id = $1',
+		[searchId, timestamp]
+	);
+}
+
 export async function enqueueNotification(chatId, searchId, payload) {
 	await pool.query(
 		'INSERT INTO notifications (chat_id, search_id, payload) VALUES ($1, $2, $3)',
@@ -121,7 +133,11 @@ export async function enqueueNotification(chatId, searchId, payload) {
 }
 
 export async function popAllNotifications() {
-	const { rows } = await pool.query('DELETE FROM notifications RETURNING chat_id, payload');
+	// DELETE ... RETURNING does not guarantee row order, so re-sort by id
+	// to deliver notifications in the order they were enqueued
+	const { rows } = await pool.query(
+		'WITH deleted AS (DELETE FROM notifications RETURNING id, chat_id, payload) SELECT * FROM deleted ORDER BY id'
+	);
 
 	const byChat = new Map();
 	for (const row of rows) {

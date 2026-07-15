@@ -12,13 +12,17 @@ const PORT = 3000;
 const MAX_SEARCHES_PER_CHAT = Number(process.env.MAX_SEARCHES_PER_CHAT) || 5;
 const CONDITIONS = ['NEW', 'USED'];
 const BUYING_OPTIONS = ['AUCTION', 'FIXED_PRICE'];
+const SOURCES = ['ebay', 'olx'];
 
 app.use(cors());
 app.use(express.json());
 
 function parseSearchFilters(body) {
-	const { categoryId, minPrice, maxPrice, condition, buyingOption, usOnly } = body;
+	const { source, categoryId, minPrice, maxPrice, condition, buyingOption, usOnly } = body;
 
+	if (source != null && !SOURCES.includes(source)) {
+		return { error: `source must be one of ${SOURCES.join(', ')}` };
+	}
 	if (categoryId != null && typeof categoryId !== 'string' && typeof categoryId !== 'number') {
 		return { error: 'categoryId must be a string or number' };
 	}
@@ -43,6 +47,7 @@ function parseSearchFilters(body) {
 
 	return {
 		filters: {
+			source: source ?? 'ebay',
 			categoryId: categoryId != null ? String(categoryId) : null,
 			minPrice: minPrice ?? null,
 			maxPrice: maxPrice ?? null,
