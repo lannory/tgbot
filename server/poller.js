@@ -1,9 +1,15 @@
 import { listPollableSearches, hasSeen, markSeen, enqueueNotification, advanceLastItemCreatedAt } from './db.js';
+import { paymentsEnabled, getCheckIntervals } from './billing/entitlements.js';
 import { searchEbay } from './ebay.js';
 import { searchOlx, OlxBackoffError } from './olx.js';
 
 const POLL_INTERVAL_MS = Number(process.env.POLL_INTERVAL_MS) || 90_000;
 const REQUEST_DELAY_MS = 400;
+
+// With payments enabled, plans may poll more often than the base cycle, so
+// the loop ticks faster and each search waits for its own plan interval
+const PLAN_TICK_MS = 15_000;
+const lastPolledAt = new Map();
 
 // OLX lists an ad in search only after moderation, which can take an hour or
 // more, so a listing may surface after newer ones were already notified
@@ -68,7 +74,16 @@ async function runPollCycle() {
 
 	try {
 		const searches = await listPollableSearches();
+		const intervals = paymentsEnabled()
+			? await getCheckIntervals([...new Set(searches.map((s) => s.chat_id))])
+			: null;
+
 		for (const search of searches) {
+			if (intervals) {
+				const due = (lastPolledAt.get(search.id) ?? 0) + intervals.get(search.chat_id) - PLAN_TICK_MS / 2;
+				if (Date.now() < due) continue;
+			}
+			lastPolledAt.set(search.id, Date.now());
 			await pollSearch(search);
 			await delay(REQUEST_DELAY_MS);
 		}
@@ -81,5 +96,5 @@ async function runPollCycle() {
 
 export function startPoller() {
 	runPollCycle();
-	setInterval(runPollCycle, POLL_INTERVAL_MS);
+	setInterval(runPollCycle, paymentsEnabled() ? Math.min(PLAN_TICK_MS, POLL_INTERVAL_MS) : POLL_INTERVAL_MS);
 }
