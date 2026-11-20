@@ -1,8 +1,9 @@
 import pg from 'pg';
+import { runMigrations } from './lib/migrate.js';
 
 const { Pool } = pg;
 
-const pool = new Pool({
+export const pool = new Pool({
 	connectionString: process.env.DATABASE_URL,
 });
 
@@ -72,6 +73,12 @@ export async function init() {
 			created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 		);
 	`);
+}
+
+// Base tables (init) plus the additive SQL migrations in ./migrations
+export async function ensureSchema() {
+	await init();
+	await runMigrations(pool);
 }
 
 export async function countSearchesByChat(chatId) {

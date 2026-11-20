@@ -2,7 +2,7 @@ import 'dotenv/config';
 import express from 'express';
 import cors from 'cors';
 
-import { init, createSearch, countSearchesByChat, listSearchesByChat, setActive, deleteSearch, popAllNotifications, createSnipe, listSnipesByChat, cancelSnipe } from './db.js';
+import { ensureSchema, createSearch, countSearchesByChat, listSearchesByChat, setActive, deleteSearch, popAllNotifications, createSnipe, listSnipesByChat, cancelSnipe } from './db.js';
 import { ensureToken, getCategorySuggestions, getItemDetails } from './ebay.js';
 import { getConsentUrl, exchangeCode, isLinked } from './ebay-auth.js';
 import { startPoller } from './poller.js';
@@ -246,7 +246,7 @@ app.delete('/snipes/:id', async (req, res) => {
 
 app.listen(PORT, async () => {
 	console.log('server started, port ' + PORT);
-	await init();
+	await ensureSchema();
 	await ensureToken();
 	startPoller();
 	startSniper();
