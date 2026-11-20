@@ -17,9 +17,14 @@ const bot = new Telegraf(process.env.BOT_TOKEN)
 bot.use(new LocalSession({ database: 'sessions.json' }).middleware());
 
 const BACKEND_IP = process.env.BACKEND_IP;
-const BACKEND_URL = `http://${BACKEND_IP}:3000`;
+const BACKEND_URL = `http://${BACKEND_IP}:${process.env.BACKEND_PORT || 3000}`;
 const NOTIFICATION_POLL_INTERVAL_MS = Number(process.env.NOTIFICATION_POLL_INTERVAL_MS) || 20000;
 const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
+
+// Optional shared secret for the backend API (must match server BACKEND_API_TOKEN)
+if (process.env.BACKEND_API_TOKEN) {
+	axios.defaults.headers.common['X-Api-Token'] = process.env.BACKEND_API_TOKEN;
+}
 
 function isAdmin(chatId) {
 	return ADMIN_CHAT_ID && String(chatId) === ADMIN_CHAT_ID;
