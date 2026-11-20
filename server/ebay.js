@@ -118,9 +118,27 @@ function xmlEscape(value) {
 	}[c]));
 }
 
+let cachedPublicIp = null;
+
+// Trading API's PlaceOffer requires the end user's IP for fraud checks.
+// Since the "user" here is this server acting on the owner's behalf
+// (not a browser request), use the server's own public IP, cached for
+// the process lifetime. Override with EBAY_END_USER_IP if set.
+async function getEndUserIp() {
+	if (process.env.EBAY_END_USER_IP) return process.env.EBAY_END_USER_IP;
+	if (cachedPublicIp) return cachedPublicIp;
+
+	const response = await axios.get('https://api.ipify.org?format=json');
+	cachedPublicIp = response.data.ip;
+	return cachedPublicIp;
+}
+
 export async function placeBid({ legacyItemId, maxBid, currency, accessToken }) {
+	const endUserIp = await getEndUserIp();
+
 	const body = `<?xml version="1.0" encoding="utf-8"?>
 <PlaceOfferRequest xmlns="urn:ebay:apis:eBLBaseComponents">
+	<EndUserIP>${xmlEscape(endUserIp)}</EndUserIP>
 	<ItemID>${xmlEscape(legacyItemId)}</ItemID>
 	<Offer>
 		<Action>Bid</Action>
