@@ -111,6 +111,17 @@ export async function listActiveSearches() {
 	return rows;
 }
 
+// Active searches of users who can still receive notifications: not blocked
+// by an admin and not having blocked the bot themselves
+export async function listPollableSearches() {
+	const { rows } = await pool.query(
+		`SELECT s.* FROM searches s
+		 LEFT JOIN bot_users u ON u.chat_id = s.chat_id
+		 WHERE s.active = true AND u.admin_blocked_at IS NULL AND u.bot_blocked_at IS NULL`
+	);
+	return rows;
+}
+
 export async function listSearchesByChat(chatId) {
 	const { rows } = await pool.query(
 		'SELECT * FROM searches WHERE chat_id = $1 ORDER BY created_at ASC',
@@ -157,10 +168,24 @@ export async function advanceLastItemCreatedAt(searchId, timestamp) {
 	);
 }
 
+// Queues a notification for the bot and records it in notification_log
+// (the queue row is deleted on delivery, the log row is kept as history)
 export async function enqueueNotification(chatId, searchId, payload) {
+	const kind = payload.type === 'snipe_update' ? 'snipe' : 'listing';
+	const platform = payload.source ?? 'ebay';
+	const title = typeof payload.title === 'string' ? payload.title.slice(0, 300) : null;
+	const url = typeof payload.itemWebUrl === 'string' ? payload.itemWebUrl.slice(0, 1000) : null;
+
 	await pool.query(
-		'INSERT INTO notifications (chat_id, search_id, payload) VALUES ($1, $2, $3)',
-		[chatId, searchId, JSON.stringify(payload)]
+		`WITH log AS (
+			INSERT INTO notification_log (chat_id, search_id, platform, kind, title, url)
+			VALUES ($1, $2, $4, $5, $6, $7) RETURNING id
+		), touched AS (
+			UPDATE searches SET last_notified_at = now() WHERE id = $2
+		)
+		INSERT INTO notifications (chat_id, search_id, payload, log_id)
+		SELECT $1, $2, $3, id FROM log`,
+		[chatId, searchId, JSON.stringify(payload), platform, kind, title, url]
 	);
 }
 
@@ -249,13 +274,14 @@ export async function popAllNotifications() {
 	// DELETE ... RETURNING does not guarantee row order, so re-sort by id
 	// to deliver notifications in the order they were enqueued
 	const { rows } = await pool.query(
-		'WITH deleted AS (DELETE FROM notifications RETURNING id, chat_id, payload) SELECT * FROM deleted ORDER BY id'
+		'WITH deleted AS (DELETE FROM notifications RETURNING id, chat_id, payload, log_id) SELECT * FROM deleted ORDER BY id'
 	);
 
 	const byChat = new Map();
 	for (const row of rows) {
 		if (!byChat.has(row.chat_id)) byChat.set(row.chat_id, []);
-		byChat.get(row.chat_id).push(row.payload);
+		// _logId lets the bot report the delivery result back (POST /notifications/report)
+		byChat.get(row.chat_id).push(row.log_id != null ? { ...row.payload, _logId: row.log_id } : row.payload);
 	}
 
 	return [...byChat.entries()].map(([chatId, items]) => ({ chatId, items }));

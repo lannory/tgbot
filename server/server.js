@@ -8,6 +8,9 @@ import { ensureToken, getCategorySuggestions, getItemDetails } from './ebay.js';
 import { getConsentUrl, exchangeCode, isLinked } from './ebay-auth.js';
 import { startPoller } from './poller.js';
 import { startSniper } from './sniper.js';
+import { startMaintenance } from './maintenance.js';
+import { ensureUser, isAdminBlocked } from './users.js';
+import { botUsersRouter } from './routes/botUsers.js';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3000;
@@ -34,6 +37,7 @@ if (BACKEND_API_TOKEN) {
 }
 
 app.use(express.json());
+app.use(botUsersRouter());
 
 function parseSearchFilters(body) {
 	const { source, categoryId, minPrice, maxPrice, condition, buyingOption, usOnly } = body;
@@ -88,11 +92,16 @@ app.post('/searches', async (req, res) => {
 		return res.status(400).json({ error });
 	}
 
+	if (await isAdminBlocked(String(chatId))) {
+		return res.status(403).json({ error: 'Access to the bot is restricted' });
+	}
+
 	const count = await countSearchesByChat(String(chatId));
 	if (count >= MAX_SEARCHES_PER_CHAT) {
 		return res.status(400).json({ error: `Max ${MAX_SEARCHES_PER_CHAT} searches per chat` });
 	}
 
+	await ensureUser(String(chatId));
 	const search = await createSearch(String(chatId), { query: query.trim(), ...filters });
 	res.status(201).json(search);
 });
@@ -263,6 +272,7 @@ app.delete('/snipes/:id', async (req, res) => {
 app.listen(PORT, async () => {
 	console.log('server started, port ' + PORT);
 	await ensureSchema();
+	startMaintenance();
 	await ensureToken();
 	startPoller();
 	startSniper();

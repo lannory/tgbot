@@ -1,4 +1,4 @@
-import { listActiveSearches, hasSeen, markSeen, enqueueNotification, advanceLastItemCreatedAt } from './db.js';
+import { listPollableSearches, hasSeen, markSeen, enqueueNotification, advanceLastItemCreatedAt } from './db.js';
 import { searchEbay } from './ebay.js';
 import { searchOlx, OlxBackoffError } from './olx.js';
 
@@ -67,7 +67,7 @@ async function runPollCycle() {
 	busy = true;
 
 	try {
-		const searches = await listActiveSearches();
+		const searches = await listPollableSearches();
 		for (const search of searches) {
 			await pollSearch(search);
 			await delay(REQUEST_DELAY_MS);
