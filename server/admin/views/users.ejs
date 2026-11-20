@@ -1,0 +1,76 @@
+<%- include('partials/header', { title: 'Користувачі' }) %>
+<%
+	const base = { q: filters.q, status: filters.status, platform: filters.platform, plan: filters.plan,
+		reg_from: filters.regFrom, reg_to: filters.regTo, sort: filters.sort, dir: filters.dir, size: filters.pageSize };
+	const urlWith = (over) => {
+		const p = new URLSearchParams();
+		for (const [k, v] of Object.entries({ ...base, ...over })) if (v !== '' && v != null) p.set(k, v);
+		return '/users?' + p.toString();
+	};
+	const sortLink = (key) => urlWith({ sort: key, dir: filters.sort === key && filters.dir === 'desc' ? 'asc' : 'desc', page: 1 });
+	const arrow = (key) => filters.sort === key ? (filters.dir === 'asc' ? ' ▲' : ' ▼') : '';
+	const cols = [['chat_id', 'ID'], ['username', 'Username'], ['first_name', "Ім'я"], ['lang', 'Мова'], ['created_at', 'Реєстрація'],
+		['last_seen_at', 'Активність'], ['olx', 'OLX'], ['ebay', 'eBay'], ['plan', 'План'], ['status', 'Статус']];
+%>
+<h1>Користувачі <span class="muted">(<%= total %>)</span></h1>
+
+<form method="get" action="/users" class="filters card">
+	<label class="grow">Пошук<input name="q" value="<%= filters.q %>" placeholder="ID, @username або ім'я" maxlength="100"></label>
+	<label>Статус
+		<select name="status">
+			<option value="">усі</option>
+			<% for (const s of ['active', 'bot_blocked', 'admin_blocked']) { %><option value="<%= s %>" <%= filters.status === s ? 'selected' : '' %>><%= fmt.status(s) %></option><% } %>
+		</select>
+	</label>
+	<label>Платформа
+		<select name="platform">
+			<option value="">усі</option>
+			<option value="olx" <%= filters.platform === 'olx' ? 'selected' : '' %>>є активні OLX</option>
+			<option value="ebay" <%= filters.platform === 'ebay' ? 'selected' : '' %>>є активні eBay</option>
+			<option value="none" <%= filters.platform === 'none' ? 'selected' : '' %>>без активних</option>
+		</select>
+	</label>
+	<label>План
+		<select name="plan">
+			<option value="">усі</option>
+			<% for (const p of plans) { %><option value="<%= p.code %>" <%= filters.plan === p.code ? 'selected' : '' %>><%= p.name %></option><% } %>
+		</select>
+	</label>
+	<label>Реєстрація з<input type="date" name="reg_from" value="<%= filters.regFrom %>"></label>
+	<label>по<input type="date" name="reg_to" value="<%= filters.regTo %>"></label>
+	<input type="hidden" name="sort" value="<%= filters.sort %>">
+	<input type="hidden" name="dir" value="<%= filters.dir %>">
+	<label>На сторінці
+		<select name="size"><% for (const s of [25, 50, 100]) { %><option <%= filters.pageSize === s ? 'selected' : '' %>><%= s %></option><% } %></select>
+	</label>
+	<div class="filter-actions"><button class="btn btn-primary" type="submit">Застосувати</button> <a class="btn btn-ghost" href="/users">Скинути</a></div>
+</form>
+
+<div class="table-wrap card flush">
+<table class="table">
+	<thead><tr>
+		<% for (const [key, label] of cols) { %>
+			<th class="<%= ['olx', 'ebay'].includes(key) ? 'num' : '' %>"><a href="<%= sortLink(key) %>"><%= label %><%= arrow(key) %></a></th>
+		<% } %>
+	</tr></thead>
+	<tbody>
+	<% if (users.length === 0) { %><tr><td colspan="<%= cols.length %>" class="empty">Нікого не знайдено</td></tr><% } %>
+	<% for (const u of users) { %>
+		<tr>
+			<td><a href="/users/<%= encodeURIComponent(u.chat_id) %>" class="mono"><%= u.chat_id %></a></td>
+			<td><%= u.username ? '@' + u.username : '—' %></td>
+			<td><%= fmt.dash(u.first_name) %></td>
+			<td><%= fmt.dash(u.lang || u.language_code) %></td>
+			<td class="nowrap"><%= fmt.date(u.created_at) %></td>
+			<td class="nowrap"><%= fmt.dateTime(u.last_seen_at) %></td>
+			<td class="num"><%= u.olx_active %></td>
+			<td class="num"><%= u.ebay_active %></td>
+			<td><%= fmt.dash(u.plan_name) %></td>
+			<td><span class="status status-<%= u.status %>"><%= fmt.status(u.status) %></span></td>
+		</tr>
+	<% } %>
+	</tbody>
+</table>
+</div>
+<%- include('partials/pager', { page: filters.page, pages, pageUrl: (n) => urlWith({ page: n }) }) %>
+<%- include('partials/footer') %>

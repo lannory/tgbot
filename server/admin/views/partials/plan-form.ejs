@@ -1,0 +1,20 @@
+<form method="post" action="<%= action %>" class="form-grid">
+	<input type="hidden" name="_csrf" value="<%= csrfToken %>">
+	<label>Код<input name="code" value="<%= plan.code %>" required maxlength="32" pattern="[a-z0-9_\-]+"></label>
+	<label>Назва<input name="name" value="<%= plan.name %>" required maxlength="64"></label>
+	<label>Ціна<input name="price" value="<%= plan.price %>" required inputmode="decimal" placeholder="99.00"></label>
+	<label>Валюта<input name="currency" value="<%= plan.currency %>" required maxlength="3" pattern="[A-Za-z]{3}"></label>
+	<label>Тривалість, днів<input name="duration_days" type="number" min="1" max="3650" value="<%= plan.duration_days ?? '' %>" placeholder="безстроково"></label>
+	<label>Макс. пошуків<input name="max_searches" type="number" min="0" max="10000" value="<%= plan.max_searches ?? '' %>" placeholder="без ліміту"></label>
+	<label>Інтервал перевірки, с<input name="check_interval_sec" type="number" min="10" max="86400" value="<%= plan.check_interval_sec %>" required></label>
+	<fieldset class="checks"><legend>Платформи</legend>
+		<% for (const [code, label] of [['ebay', 'eBay'], ['olx', 'OLX']]) { %>
+		<label class="check"><input type="checkbox" name="platforms" value="<%= code %>" <%= plan.platforms.includes(code) ? 'checked' : '' %>> <%= label %></label>
+		<% } %>
+	</fieldset>
+	<fieldset class="checks"><legend>Стан</legend>
+		<label class="check"><input type="checkbox" name="is_active" <%= plan.is_active ? 'checked' : '' %>> активний</label>
+		<label class="check"><input type="checkbox" name="is_default" <%= plan.is_default ? 'checked' : '' %>> за замовчуванням</label>
+	</fieldset>
+	<div class="span-2"><button class="btn btn-primary" type="submit"><%= submitLabel %></button></div>
+</form>

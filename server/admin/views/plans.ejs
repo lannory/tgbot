@@ -1,0 +1,48 @@
+<%- include('partials/header', { title: 'Тарифи' }) %>
+<%
+	const decimals = (c) => ['XTR', 'JPY'].includes(c) ? 0 : 2;
+	const majorPrice = (p) => {
+		const d = decimals(p.currency);
+		if (!d) return String(p.price_minor);
+		const s = String(p.price_minor).padStart(d + 1, '0');
+		return s.slice(0, -d) + '.' + s.slice(-d);
+	};
+%>
+<h1>Тарифи</h1>
+<p class="muted">Ціни зберігаються в мінімальних одиницях (копійки, центи; для Telegram Stars — XTR без дробової частини). Ліміти застосовуються лише коли <code>PAYMENTS_ENABLED=true</code>. Користувачі без активної підписки отримують тариф «за замовчуванням».</p>
+
+<div class="table-wrap card flush">
+<table class="table">
+	<thead><tr><th>Код</th><th>Назва</th><th class="num">Ціна</th><th>Тривалість</th><th>Пошуків</th><th>Платформи</th><th>Інтервал</th><th>Підписників</th><th>Стан</th></tr></thead>
+	<tbody>
+	<% for (const p of plans) { %>
+		<tr>
+			<td class="mono"><%= p.code %></td>
+			<td><%= p.name %></td>
+			<td class="num nowrap"><%= fmt.money(p.price_minor, p.currency) %></td>
+			<td><%= p.duration_days ? p.duration_days + ' дн.' : '∞' %></td>
+			<td><%= p.max_searches ?? '∞' %></td>
+			<td><%= p.platforms.map(fmt.platform).join(', ') %></td>
+			<td><%= p.check_interval_sec %> с</td>
+			<td><%= p.current_subscribers %></td>
+			<td><%= p.is_active ? 'активний' : 'вимкнено' %><% if (p.is_default) { %> · <b>за замовч.</b><% } %></td>
+		</tr>
+	<% } %>
+	</tbody>
+</table>
+</div>
+
+<% for (const p of plans) { %>
+<details class="card">
+	<summary>Редагувати «<%= p.name %>»</summary>
+	<%- include('partials/plan-form', { action: '/plans/' + p.id, submitLabel: 'Зберегти', plan: { ...p, price: majorPrice(p) } }) %>
+</details>
+<% } %>
+
+<details class="card">
+	<summary>Новий тариф</summary>
+	<%- include('partials/plan-form', { action: '/plans', submitLabel: 'Створити', plan: {
+		code: '', name: '', price: '', currency: 'UAH', duration_days: 30, max_searches: 20,
+		check_interval_sec: 60, platforms: ['ebay', 'olx'], is_active: true, is_default: false } }) %>
+</details>
+<%- include('partials/footer') %>

@@ -1,0 +1,12 @@
+<%- include('partials/header', { title: 'Вхід' }) %>
+<section class="card login">
+	<h1>Вхід в адмінку</h1>
+	<% if (error) { %><div class="flash flash-error" role="alert"><%= error %></div><% } %>
+	<form method="post" action="/login" class="stack">
+		<input type="hidden" name="_csrf" value="<%= loginCsrf %>">
+		<label>Логін<input name="username" autocomplete="username" required maxlength="64" autofocus></label>
+		<label>Пароль<input name="password" type="password" autocomplete="current-password" required maxlength="200"></label>
+		<button type="submit" class="btn btn-primary">Увійти</button>
+	</form>
+</section>
+<%- include('partials/footer') %>

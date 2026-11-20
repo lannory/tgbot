@@ -11,5 +11,15 @@ module.exports = {
         NODE_ENV: "production",
       },
     },
+    {
+      name: "admin",
+      script: "admin/index.js",
+      cwd: "/root/tgbot/server",
+      interpreter: "node",
+      watch: false,
+      env: {
+        NODE_ENV: "production",
+      },
+    },
   ],
 };
