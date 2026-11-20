@@ -23,6 +23,19 @@ let blockedUntil = 0;
 
 export class OlxBackoffError extends Error {}
 
+// OLX caches the results of each distinct request for ~6 minutes, so an
+// identical poll keeps getting the same stale page while new listings are
+// already visible to other requests. Each search cycles its page size, so
+// a request repeats only after 11 polls — far longer than the cache lives.
+const PAGE_SIZES = [40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50];
+const pollCounts = new Map();
+
+function nextPageSize(searchId) {
+	const count = pollCounts.get(searchId) ?? 0;
+	pollCounts.set(searchId, count + 1);
+	return PAGE_SIZES[count % PAGE_SIZES.length];
+}
+
 function registerBlock(reason) {
 	backoffMs = Math.min(Math.max(backoffMs * 2, MIN_BACKOFF_MS), MAX_BACKOFF_MS);
 	blockedUntil = Date.now() + backoffMs;
@@ -62,7 +75,7 @@ export async function searchOlx(search) {
 		offset: '0',
 		// busy queries get many refreshes a minute — a wide page keeps a few
 		// minutes of activity in view between polls
-		limit: '40',
+		limit: String(nextPageSize(search.id)),
 		query: search.query,
 		// OLX's "newest" order: by last refresh time (activation after moderation,
 		// or a seller bumping an old ad), not creation time. The API ignores the
