@@ -1,21 +1,50 @@
 import 'dotenv/config';
+import crypto from 'crypto';
 import express from 'express';
 import cors from 'cors';
 
-import { init, createSearch, countSearchesByChat, listSearchesByChat, setActive, deleteSearch, popAllNotifications } from './db.js';
+import { ensureSchema, createSearch, listSearchesByChat, setActive, deleteSearch, popAllNotifications } from './db.js';
 import { ensureToken, getCategorySuggestions } from './ebay.js';
 import { startPoller } from './poller.js';
+import { startMaintenance } from './maintenance.js';
+import { ensureUser, isAdminBlocked } from './users.js';
+import { canCreateSearch } from './billing/entitlements.js';
+import { createProviders } from './billing/providers/index.js';
+import { botUsersRouter } from './routes/botUsers.js';
+import { billingRouter, webhooksRouter } from './routes/billing.js';
 
 const app = express();
-const PORT = 3000;
+const PORT = Number(process.env.PORT) || 3000;
 
-const MAX_SEARCHES_PER_CHAT = Number(process.env.MAX_SEARCHES_PER_CHAT) || 5;
 const CONDITIONS = ['NEW', 'USED'];
 const BUYING_OPTIONS = ['AUCTION', 'FIXED_PRICE'];
 const SOURCES = ['ebay', 'olx'];
 
+const paymentProviders = createProviders();
+
 app.use(cors());
+
+// Payment webhooks verify their own signatures on the raw body, so they are
+// mounted before the JSON parser and outside the bot API token check
+app.use(webhooksRouter({ providers: paymentProviders }));
+
+// Optional shared secret between the bot and this API. When unset, the API
+// behaves as before (no auth) for backward compatibility.
+const BACKEND_API_TOKEN = process.env.BACKEND_API_TOKEN;
+if (BACKEND_API_TOKEN) {
+	const expected = Buffer.from(BACKEND_API_TOKEN);
+	app.use((req, res, next) => {
+		const given = Buffer.from(String(req.get('x-api-token') ?? ''));
+		if (given.length !== expected.length || !crypto.timingSafeEqual(given, expected)) {
+			return res.status(401).json({ error: 'unauthorized' });
+		}
+		next();
+	});
+}
+
 app.use(express.json());
+app.use(botUsersRouter());
+app.use(billingRouter({ providers: paymentProviders }));
 
 function parseSearchFilters(body) {
 	const { source, categoryId, minPrice, maxPrice, condition, buyingOption, usOnly } = body;
@@ -70,11 +99,16 @@ app.post('/searches', async (req, res) => {
 		return res.status(400).json({ error });
 	}
 
-	const count = await countSearchesByChat(String(chatId));
-	if (count >= MAX_SEARCHES_PER_CHAT) {
-		return res.status(400).json({ error: `Max ${MAX_SEARCHES_PER_CHAT} searches per chat` });
+	if (await isAdminBlocked(String(chatId))) {
+		return res.status(403).json({ error: 'Access to the bot is restricted' });
 	}
 
+	const allowed = await canCreateSearch(String(chatId), filters.source);
+	if (!allowed.ok) {
+		return res.status(400).json({ error: allowed.error, code: allowed.code });
+	}
+
+	await ensureUser(String(chatId));
 	const search = await createSearch(String(chatId), { query: query.trim(), ...filters });
 	res.status(201).json(search);
 });
@@ -142,7 +176,8 @@ app.get('/notifications/all', async (req, res) => {
 
 app.listen(PORT, async () => {
 	console.log('server started, port ' + PORT);
-	await init();
+	await ensureSchema();
+	startMaintenance();
 	await ensureToken();
 	startPoller();
 });

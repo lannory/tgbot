@@ -1,0 +1,7 @@
+<% if (pages > 1) { %>
+<nav class="pager" aria-label="Сторінки">
+	<% if (page > 1) { %><a class="btn btn-ghost" href="<%= pageUrl(page - 1) %>">← Назад</a><% } %>
+	<span class="muted">Сторінка <%= page %> з <%= pages %></span>
+	<% if (page < pages) { %><a class="btn btn-ghost" href="<%= pageUrl(page + 1) %>">Далі →</a><% } %>
+</nav>
+<% } %>

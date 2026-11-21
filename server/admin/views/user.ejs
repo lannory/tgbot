@@ -1,0 +1,181 @@
+<%- include('partials/header', { title: user.username ? '@' + user.username : user.chat_id }) %>
+<%
+	const csrf = `<input type="hidden" name="_csrf" value="${csrfToken}">`;
+	const safeUrl = (url) => typeof url === 'string' && /^https?:\/\//i.test(url) ? url : null;
+	const describe = (s) => {
+		const parts = [];
+		if (s.category_id) parts.push('категорія ' + s.category_id);
+		if (s.min_price != null || s.max_price != null) parts.push(`ціна ${s.min_price ?? ''}–${s.max_price ?? ''}`);
+		if (s.condition) parts.push(s.condition === 'NEW' ? 'нові' : 'вживані');
+		if (s.buying_option) parts.push(s.buying_option === 'AUCTION' ? 'аукціон' : 'фікс. ціна');
+		if (s.us_only) parts.push('тільки США');
+		return parts.join(' · ');
+	};
+	const sub = subscriptions.current;
+%>
+<p class="crumbs"><a href="/users">← Користувачі</a></p>
+<div class="page-head">
+	<h1><%= user.first_name || (user.username ? '@' + user.username : user.chat_id) %></h1>
+	<span class="status status-<%= user.status %>"><%= fmt.status(user.status) %></span>
+</div>
+
+<div class="grid-2">
+	<section class="card">
+		<h2>Дані</h2>
+		<dl class="kv">
+			<dt>Chat ID</dt><dd class="mono"><%= user.chat_id %></dd>
+			<dt>Username</dt><dd><%= user.username ? '@' + user.username : '—' %></dd>
+			<dt>Ім'я</dt><dd><%= fmt.dash(user.first_name) %></dd>
+			<dt>Мова в боті</dt><dd><%= fmt.dash(user.lang) %> <span class="muted">(Telegram: <%= fmt.dash(user.language_code) %>)</span></dd>
+			<dt>Реєстрація</dt><dd><%= fmt.dateTime(user.created_at) %></dd>
+			<dt>Остання активність</dt><dd><%= fmt.dateTime(user.last_seen_at) %></dd>
+			<dt>Заблокував бота</dt><dd><%= fmt.dateTime(user.bot_blocked_at) %></dd>
+			<dt>Заблоковано адміном</dt><dd><%= fmt.dateTime(user.admin_blocked_at) %><% if (user.admin_block_reason) { %> — <%= user.admin_block_reason %><% } %></dd>
+		</dl>
+		<% if (user.admin_blocked_at) { %>
+		<form method="post" action="/users/<%= encodeURIComponent(user.chat_id) %>/unblock" class="inline-form">
+			<%- csrf %>
+			<input name="reason" maxlength="500" placeholder="Причина (необов'язково)">
+			<button class="btn" type="submit">Розблокувати</button>
+		</form>
+		<% } else { %>
+		<form method="post" action="/users/<%= encodeURIComponent(user.chat_id) %>/block" class="inline-form" data-confirm="Заблокувати користувача? Бот перестане йому відповідати і надсилати сповіщення.">
+			<%- csrf %>
+			<input name="reason" maxlength="500" required placeholder="Причина блокування">
+			<button class="btn btn-danger" type="submit">Заблокувати в боті</button>
+		</form>
+		<% } %>
+		<p class="small"><a href="/audit?target_type=user&target_id=<%= encodeURIComponent(user.chat_id) %>">Дії адмінів щодо користувача →</a></p>
+	</section>
+
+	<section class="card">
+		<h2>Підписка</h2>
+		<% if (sub) { %>
+		<dl class="kv">
+			<dt>Тариф</dt><dd><%= sub.plan_name %> <span class="muted">(<%= sub.plan_code %>)</span></dd>
+			<dt>Статус</dt><dd><%= sub.status %></dd>
+			<dt>Джерело</dt><dd><%= sub.source %><% if (sub.created_by) { %> · <%= sub.created_by %><% } %></dd>
+			<dt>Період</dt><dd><%= fmt.dateTime(sub.started_at) %> — <%= sub.ends_at ? fmt.dateTime(sub.ends_at) : 'безстроково' %></dd>
+		</dl>
+		<form method="post" action="/users/<%= encodeURIComponent(user.chat_id) %>/subscription/cancel" class="inline-form" data-confirm="Скасувати поточну підписку?">
+			<%- csrf %>
+			<input name="reason" maxlength="500" required placeholder="Причина скасування">
+			<button class="btn btn-danger" type="submit">Скасувати</button>
+		</form>
+		<% } else { %>
+		<p>Тариф за замовчуванням: <b><%= fmt.dash(user.plan_name) %></b></p>
+		<% } %>
+
+		<h3>Видати або продовжити вручну</h3>
+		<form method="post" action="/users/<%= encodeURIComponent(user.chat_id) %>/subscription/grant" class="form-grid">
+			<%- csrf %>
+			<label>Тариф
+				<select name="plan_id" required>
+					<% for (const p of plans) { %><option value="<%= p.id %>" <%= sub && sub.plan_id === p.id ? 'selected' : '' %>><%= p.name %> (<%= p.code %>)</option><% } %>
+				</select>
+			</label>
+			<label>Днів<input name="days" type="number" min="1" max="3650" value="30" required></label>
+			<label class="span-2">Причина<input name="reason" maxlength="500" required placeholder="Напр.: компенсація за збій 12.11"></label>
+			<div class="span-2"><button class="btn btn-primary" type="submit">Видати / продовжити</button>
+				<span class="muted small">Той самий тариф продовжується від дати закінчення, інший — замінює поточну підписку.</span></div>
+		</form>
+	</section>
+</div>
+
+<section class="card flush">
+	<h2 class="pad">Пошуки (<%= searches.length %>)</h2>
+	<div class="table-wrap"><table class="table">
+		<thead><tr><th>ID</th><th>Платформа</th><th>Запит і фільтри</th><th>Створено</th><th>Стан</th><th>Остання знахідка</th><th></th></tr></thead>
+		<tbody>
+		<% if (searches.length === 0) { %><tr><td colspan="7" class="empty">Пошуків немає</td></tr><% } %>
+		<% for (const s of searches) { %>
+			<tr>
+				<td class="mono"><%= s.id %></td>
+				<td><%= fmt.platform(s.source) %></td>
+				<td><b><%= s.query %></b><% const d = describe(s); if (d) { %><div class="muted small"><%= d %></div><% } %></td>
+				<td class="nowrap"><%= fmt.dateTime(s.created_at) %></td>
+				<td><%= s.active ? 'активний' : 'на паузі' %></td>
+				<td class="nowrap"><%= fmt.dateTime(s.last_notified_at) %></td>
+				<td class="actions">
+					<form method="post" action="/searches/<%= s.id %>/<%= s.active ? 'disable' : 'enable' %>" data-reason-prompt="Причина (необов'язково):">
+						<%- csrf %><input type="hidden" name="reason" value="">
+						<button class="btn btn-small" type="submit"><%= s.active ? 'Вимкнути' : 'Увімкнути' %></button>
+					</form>
+					<form method="post" action="/searches/<%= s.id %>/delete" data-confirm="Видалити пошук «<%= s.query %>» назавжди?" data-reason-prompt="Причина видалення (необов'язково):">
+						<%- csrf %><input type="hidden" name="reason" value="">
+						<button class="btn btn-small btn-danger" type="submit">Видалити</button>
+					</form>
+				</td>
+			</tr>
+		<% } %>
+		</tbody>
+	</table></div>
+</section>
+
+<section class="card flush">
+	<h2 class="pad">Останні сповіщення (<%= notifications.length %>)</h2>
+	<div class="table-wrap"><table class="table">
+		<thead><tr><th>Час</th><th>Платформа</th><th>Оголошення</th><th>Пошук</th><th>Доставка</th></tr></thead>
+		<tbody>
+		<% if (notifications.length === 0) { %><tr><td colspan="5" class="empty">Сповіщень ще не було</td></tr><% } %>
+		<% for (const n of notifications) { %>
+			<tr>
+				<td class="nowrap"><%= fmt.dateTime(n.created_at) %></td>
+				<td><%= fmt.platform(n.platform) %></td>
+				<td><% const href = safeUrl(n.url); if (href) { %><a href="<%= href %>" target="_blank" rel="noopener noreferrer"><%= n.title || href %></a><% } else { %><%= fmt.dash(n.title) %><% } %></td>
+				<td class="mono"><%= fmt.dash(n.search_id) %></td>
+				<td><span class="delivery delivery-<%= n.status %>"><%= { queued: 'в черзі', sent: 'доставлено', failed: 'помилка' }[n.status] %></span>
+					<% if (n.error) { %><div class="muted small"><%= n.error %></div><% } %></td>
+			</tr>
+		<% } %>
+		</tbody>
+	</table></div>
+</section>
+
+<section class="card flush">
+	<h2 class="pad">Помилки (<%= errors.length %>)</h2>
+	<div class="table-wrap"><table class="table">
+		<thead><tr><th>Час</th><th>Тип</th><th>Повідомлення</th></tr></thead>
+		<tbody>
+		<% if (errors.length === 0) { %><tr><td colspan="3" class="empty">Помилок немає</td></tr><% } %>
+		<% for (const e of errors) { %>
+			<tr><td class="nowrap"><%= fmt.dateTime(e.created_at) %></td><td><%= e.kind %></td><td><%= fmt.dash(e.message) %></td></tr>
+		<% } %>
+		</tbody>
+	</table></div>
+</section>
+
+<div class="grid-2">
+	<section class="card flush">
+		<h2 class="pad">Платежі</h2>
+		<div class="table-wrap"><table class="table">
+			<thead><tr><th>Дата</th><th>Тариф</th><th class="num">Сума</th><th>Провайдер</th><th>Статус</th></tr></thead>
+			<tbody>
+			<% if (payments.length === 0) { %><tr><td colspan="5" class="empty">Платежів немає</td></tr><% } %>
+			<% for (const p of payments) { %>
+				<tr>
+					<td class="nowrap"><%= fmt.dateTime(p.paid_at || p.created_at) %></td>
+					<td><%= fmt.dash(p.plan_name) %></td>
+					<td class="num nowrap"><%= fmt.money(p.amount_minor, p.currency) %></td>
+					<td><%= p.provider %><div class="muted small mono"><%= p.external_id %></div></td>
+					<td><%= p.status %></td>
+				</tr>
+			<% } %>
+			</tbody>
+		</table></div>
+	</section>
+	<section class="card flush">
+		<h2 class="pad">Історія підписок</h2>
+		<div class="table-wrap"><table class="table">
+			<thead><tr><th>Тариф</th><th>Статус</th><th>Джерело</th><th>Період</th></tr></thead>
+			<tbody>
+			<% if (subscriptions.history.length === 0) { %><tr><td colspan="4" class="empty">Підписок не було</td></tr><% } %>
+			<% for (const h of subscriptions.history) { %>
+				<tr><td><%= h.plan_name %></td><td><%= h.status %></td><td><%= h.source %><% if (h.created_by) { %> · <%= h.created_by %><% } %></td>
+					<td class="nowrap"><%= fmt.date(h.started_at) %> — <%= h.ends_at ? fmt.date(h.ends_at) : '∞' %></td></tr>
+			<% } %>
+			</tbody>
+		</table></div>
+	</section>
+</div>
+<%- include('partials/footer') %>

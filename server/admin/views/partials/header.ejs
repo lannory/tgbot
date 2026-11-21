@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title><%= title %> · Адмінка бота</title>
+<link rel="stylesheet" href="/static/admin.css">
+<script src="/static/admin.js" defer></script>
+</head>
+<body>
+<% if (admin) { %>
+<header class="topbar">
+	<a class="brand" href="/">Адмінка бота</a>
+	<nav class="nav">
+		<% for (const [href, label] of [['/', 'Дашборд'], ['/users', 'Користувачі'], ['/plans', 'Тарифи'], ['/audit', 'Аудит']]) { %>
+		<a href="<%= href %>" class="<%= (href === '/' ? currentPath === '/' : currentPath.startsWith(href)) ? 'active' : '' %>"><%= label %></a>
+		<% } %>
+	</nav>
+	<form method="post" action="/logout" class="logout">
+		<input type="hidden" name="_csrf" value="<%= csrfToken %>">
+		<span class="muted"><%= admin %></span>
+		<button type="submit" class="btn btn-ghost">Вийти</button>
+	</form>
+</header>
+<% } %>
+<main class="container">
+<% if (flash) { %><div class="flash flash-<%= flash.type === 'ok' ? 'ok' : 'error' %>" role="status"><%= flash.text %></div><% } %>

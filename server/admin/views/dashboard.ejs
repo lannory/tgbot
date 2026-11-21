@@ -1,0 +1,63 @@
+<%- include('partials/header', { title: 'Дашборд' }) %>
+<% const u = stats.users, s = stats.searches, n = stats.notifications, b = stats.billing; %>
+<h1>Дашборд</h1>
+
+<section class="tiles">
+	<div class="tile"><div class="tile-label">Користувачів</div><div class="tile-value"><%= u.total %></div>
+		<div class="tile-sub">нових: сьогодні <b><%= u.new_today %></b> · 7 дн. <b><%= u.new_7d %></b> · 30 дн. <b><%= u.new_30d %></b></div></div>
+	<div class="tile"><div class="tile-label">Активні</div><div class="tile-value"><%= u.active_24h %> <span class="tile-unit">за 24 год</span></div>
+		<div class="tile-sub">7 дн. <b><%= u.active_7d %></b> · 30 дн. <b><%= u.active_30d %></b></div></div>
+	<div class="tile"><div class="tile-label">Активні пошуки</div><div class="tile-value"><%= s.active_total %></div>
+		<div class="tile-sub">OLX <b><%= s.active_olx %></b> · eBay <b><%= s.active_ebay %></b> · усього пошуків <%= s.total %></div></div>
+	<div class="tile"><div class="tile-label">Сповіщень надіслано</div><div class="tile-value"><%= n.sent_today %> <span class="tile-unit">сьогодні</span></div>
+		<div class="tile-sub">7 дн. <b><%= n.sent_7d %></b> · помилок: сьогодні <%= n.failed_today %>, 7 дн. <%= n.failed_7d %></div></div>
+	<div class="tile"><div class="tile-label">Заблокували бота</div><div class="tile-value"><%= u.bot_blocked %></div>
+		<div class="tile-sub">заблоковано адміном: <b><%= u.admin_blocked %></b></div></div>
+</section>
+
+<section class="card">
+	<div class="card-head">
+		<h2>Нові та активні користувачі, 30 днів</h2>
+		<div class="legend"><span class="key key-new"></span>нові <span class="key key-active"></span>активні</div>
+	</div>
+	<%- chartSvg %>
+	<details>
+		<summary>Таблиця</summary>
+		<table class="table compact">
+			<thead><tr><th>День</th><th class="num">Нові</th><th class="num">Активні</th></tr></thead>
+			<tbody>
+			<% for (const d of stats.series.slice().reverse()) { %>
+				<tr><td><%= d.day %></td><td class="num"><%= d.new_users %></td><td class="num"><%= d.active_users %></td></tr>
+			<% } %>
+			</tbody>
+		</table>
+	</details>
+	<p class="muted small">Активність фіксується з моменту встановлення трекінгу; дата реєстрації користувачів, що були раніше, — за їхнім першим пошуком.</p>
+</section>
+
+<h2>Монетизація <% if (!paymentsEnabled) { %><span class="badge">PAYMENTS_ENABLED=false — ліміти не застосовуються</span><% } %></h2>
+<section class="tiles">
+	<div class="tile"><div class="tile-label">Платних користувачів</div><div class="tile-value"><%= b.paidUsers %></div></div>
+	<div class="tile"><div class="tile-label">Дохід за місяць</div>
+		<div class="tile-value"><% if (b.revenue.length === 0) { %>0<% } else { %><% for (const r of b.revenue) { %><div><%= fmt.money(r.totalMinor, r.currency) %></div><% } %><% } %></div>
+		<div class="tile-sub">оплачені платежі з 1-го числа</div></div>
+	<div class="tile"><div class="tile-label">Закінчуються за 7 днів</div><div class="tile-value"><%= b.expiring.length %></div></div>
+</section>
+
+<% if (b.expiring.length) { %>
+<section class="card">
+	<h2>Підписки, що закінчуються найближчими 7 днями</h2>
+	<div class="table-wrap"><table class="table">
+		<thead><tr><th>Користувач</th><th>Тариф</th><th>Статус</th><th>Закінчується</th></tr></thead>
+		<tbody>
+		<% for (const e of b.expiring) { %>
+			<tr>
+				<td><a href="/users/<%= encodeURIComponent(e.chat_id) %>"><%= e.username ? '@' + e.username : (e.first_name || e.chat_id) %></a></td>
+				<td><%= e.plan_name %></td><td><%= e.status %></td><td><%= fmt.dateTime(e.ends_at) %></td>
+			</tr>
+		<% } %>
+		</tbody>
+	</table></div>
+</section>
+<% } %>
+<%- include('partials/footer') %>

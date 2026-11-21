@@ -16,9 +16,51 @@ const bot = new Telegraf(process.env.BOT_TOKEN)
 
 bot.use(new LocalSession({ database: 'sessions.json' }).middleware());
 
+bot.use(async (ctx, next) => {
+	// The user blocked (kicked) or unblocked the bot in a private chat.
+	// Nothing else handles these updates, and replying to a user who blocked
+	// the bot would fail, so they stop here.
+	if (ctx.myChatMember) {
+		if (ctx.chat?.type === 'private') {
+			const status = ctx.myChatMember.new_chat_member?.status;
+			if (status === 'kicked') reportChatStatus(ctx.chat.id, 'bot_blocked');
+			if (status === 'member') reportChatStatus(ctx.chat.id, 'active');
+		}
+		return;
+	}
+
+	if (!ctx.chat || !ctx.from) return next();
+	const chatId = ctx.chat.id;
+
+	const known = userState.has(chatId);
+	const pending = touchUser(ctx.from, chatId);
+	// First update from this chat since the bot started: wait briefly for the
+	// block status; afterwards the cached value is used and refreshed in the background
+	if (!known && pending) {
+		await Promise.race([pending, new Promise((resolve) => setTimeout(resolve, TOUCH_TIMEOUT_MS))]);
+	}
+
+	const state = userState.get(chatId);
+	if (state?.blocked) {
+		if (ctx.callbackQuery) await ctx.answerCbQuery().catch(() => {});
+		if (!state.notifiedBlocked) {
+			state.notifiedBlocked = true;
+			await ctx.reply(t(getLang(chatId), 'accessRestricted')).catch(() => {});
+		}
+		return;
+	}
+
+	return next();
+});
+
 const BACKEND_IP = process.env.BACKEND_IP;
-const BACKEND_URL = `http://${BACKEND_IP}:3000`;
+const BACKEND_URL = `http://${BACKEND_IP}:${process.env.BACKEND_PORT || 3000}`;
 const NOTIFICATION_POLL_INTERVAL_MS = Number(process.env.NOTIFICATION_POLL_INTERVAL_MS) || 20000;
+
+// Optional shared secret for the backend API (must match server BACKEND_API_TOKEN)
+if (process.env.BACKEND_API_TOKEN) {
+	axios.defaults.headers.common['X-Api-Token'] = process.env.BACKEND_API_TOKEN;
+}
 
 function loadLangs() {
 	try {
@@ -37,6 +79,41 @@ function getLang(chatId) {
 function setLang(chatId, lang) {
 	langs[chatId] = lang;
 	fs.writeFileSync(LANGS_FILE, JSON.stringify(langs, null, 2), 'utf-8');
+}
+
+// --- user activity tracking (admin panel) ---
+// Best-effort: the backend records first/last visit and daily activity and
+// answers whether an admin blocked the chat. Calls are throttled per chat and
+// never delay or break update handling.
+
+const TOUCH_INTERVAL_MS = 60_000;
+const TOUCH_TIMEOUT_MS = 1500;
+const userState = new Map(); // chatId -> { touchedAt, blocked, notifiedBlocked }
+
+function touchUser(from, chatId, { force = false } = {}) {
+	const state = userState.get(chatId);
+	if (!force && state && Date.now() - state.touchedAt < TOUCH_INTERVAL_MS) return null;
+
+	const next = { touchedAt: Date.now(), blocked: state?.blocked ?? false, notifiedBlocked: state?.notifiedBlocked ?? false };
+	userState.set(chatId, next);
+
+	return axios.post(`${BACKEND_URL}/users/touch`, {
+		chatId,
+		username: from?.username,
+		firstName: from?.first_name,
+		languageCode: from?.language_code,
+		lang: getLang(chatId) ?? undefined,
+	}, { timeout: 5000 })
+		.then(({ data }) => {
+			next.blocked = Boolean(data?.blocked);
+			if (!next.blocked) next.notifiedBlocked = false;
+		})
+		.catch((err) => console.log('user touch failed', err.message));
+}
+
+function reportChatStatus(chatId, status) {
+	axios.post(`${BACKEND_URL}/users/status`, { chatId, status }, { timeout: 5000 })
+		.catch((err) => console.log('user status report failed', err.message));
 }
 
 const translations = {
@@ -96,6 +173,7 @@ const translations = {
 		itemPositiveOrders: '% позитивних відгуків',
 		itemCondition: 'Стан:',
 		itemLocation: 'Місто:',
+		accessRestricted: '⛔ Доступ до бота обмежено.',
 	},
 	en: {
 		chooseLanguage: 'Оберіть мову / Choose language:',
@@ -153,6 +231,7 @@ const translations = {
 		itemPositiveOrders: '% positive feedback',
 		itemCondition: 'Condition:',
 		itemLocation: 'City:',
+		accessRestricted: '⛔ Access to the bot is restricted.',
 	},
 };
 
@@ -360,6 +439,7 @@ bot.action(/^lang:(uk|en)$/, async (ctx) => {
 	await ctx.answerCbQuery();
 	const lang = ctx.match[1];
 	setLang(ctx.chat.id, lang);
+	touchUser(ctx.from, ctx.chat.id, { force: true });
 
 	await ctx.editMessageText(t(lang, 'languageSet'));
 	await ctx.reply(t(lang, 'welcome', ctx.from.username || ctx.from.first_name), mainMenu(lang));
@@ -551,11 +631,33 @@ function startNotificationPoller() {
 	setInterval(async () => {
 		try {
 			const { data: groups } = await axios.get(`${BACKEND_URL}/notifications/all`);
+			const results = [];
 			for (const { chatId, items } of groups) {
 				const lang = getLang(chatId) || 'uk';
+				let unreachable = false;
 				for (const item of items) {
-					await bot.telegram.sendMessage(chatId, formatItem(item, lang));
+					const logId = item._logId ?? null;
+					if (unreachable) {
+						results.push({ chatId, logId, ok: false, skipped: true, error: 'skipped: chat unreachable' });
+						continue;
+					}
+					// one failed chat must not drop the rest of the batch
+					try {
+						await bot.telegram.sendMessage(chatId, formatItem(item, lang));
+						results.push({ chatId, logId, ok: true });
+					} catch (err) {
+						const error = err.response?.description || err.message;
+						// 403: "bot was blocked by the user", "user is deactivated", ...
+						const blocked = err.response?.error_code === 403;
+						if (blocked) unreachable = true;
+						results.push({ chatId, logId, ok: false, blocked, error });
+						console.log(`delivery to ${chatId} failed`, error);
+					}
 				}
+			}
+			if (results.length > 0) {
+				axios.post(`${BACKEND_URL}/notifications/report`, { results })
+					.catch((err) => console.log('delivery report failed', err.message));
 			}
 		} catch (err) {
 			console.log('notification poll failed', err.message);

@@ -1,0 +1,38 @@
+<%- include('partials/header', { title: 'Аудит' }) %>
+<%
+	const pageUrl = (n) => {
+		const p = new URLSearchParams({ page: n });
+		if (targetType) p.set('target_type', targetType);
+		if (targetId) p.set('target_id', targetId);
+		return '/audit?' + p.toString();
+	};
+	const targetLink = (r) => {
+		if (r.target_type === 'user' && r.target_id) return '/users/' + encodeURIComponent(r.target_id);
+		if (r.target_type === 'plan') return '/plans';
+		if (r.target_type === 'search' && r.details?.chat_id) return '/users/' + encodeURIComponent(r.details.chat_id);
+		return null;
+	};
+%>
+<h1>Журнал дій адміна <span class="muted">(<%= total %>)</span></h1>
+<% if (targetType) { %><p>Фільтр: <%= targetType %> <span class="mono"><%= targetId %></span> · <a href="/audit">скинути</a></p><% } %>
+<div class="table-wrap card flush">
+<table class="table">
+	<thead><tr><th>Час</th><th>Адмін</th><th>Дія</th><th>Об'єкт</th><th>Причина</th><th>Деталі</th><th>IP</th></tr></thead>
+	<tbody>
+	<% if (rows.length === 0) { %><tr><td colspan="7" class="empty">Записів немає</td></tr><% } %>
+	<% for (const r of rows) { %>
+		<tr>
+			<td class="nowrap"><%= fmt.dateTime(r.created_at) %></td>
+			<td><%= r.admin %></td>
+			<td class="mono"><%= r.action %></td>
+			<td><% const link = targetLink(r); if (r.target_type) { %><% if (link) { %><a href="<%= link %>"><%= r.target_type %> <%= r.target_id %></a><% } else { %><%= r.target_type %> <%= r.target_id %><% } %><% } else { %>—<% } %></td>
+			<td><%= fmt.dash(r.reason) %></td>
+			<td><% if (r.details) { %><code class="details"><%= JSON.stringify(r.details) %></code><% } else { %>—<% } %></td>
+			<td class="mono small"><%= fmt.dash(r.ip) %></td>
+		</tr>
+	<% } %>
+	</tbody>
+</table>
+</div>
+<%- include('partials/pager', { page, pages, pageUrl }) %>
+<%- include('partials/footer') %>
