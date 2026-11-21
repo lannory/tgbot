@@ -56,15 +56,10 @@ bot.use(async (ctx, next) => {
 const BACKEND_IP = process.env.BACKEND_IP;
 const BACKEND_URL = `http://${BACKEND_IP}:${process.env.BACKEND_PORT || 3000}`;
 const NOTIFICATION_POLL_INTERVAL_MS = Number(process.env.NOTIFICATION_POLL_INTERVAL_MS) || 20000;
-const ADMIN_CHAT_ID = process.env.ADMIN_CHAT_ID;
 
 // Optional shared secret for the backend API (must match server BACKEND_API_TOKEN)
 if (process.env.BACKEND_API_TOKEN) {
 	axios.defaults.headers.common['X-Api-Token'] = process.env.BACKEND_API_TOKEN;
-}
-
-function isAdmin(chatId) {
-	return ADMIN_CHAT_ID && String(chatId) === ADMIN_CHAT_ID;
 }
 
 function loadLangs() {
@@ -178,27 +173,6 @@ const translations = {
 		itemPositiveOrders: '% позитивних відгуків',
 		itemCondition: 'Стан:',
 		itemLocation: 'Місто:',
-		snipes: '🎯 Снайпи',
-		linkEbayPrompt: (url) => `Щоб робити ставки, прив'яжіть свій акаунт eBay:\n\n1. Відкрийте посилання і дозвольте доступ:\n${url}\n\n2. Після підтвердження вас перенаправить на іншу сторінку — скопіюйте з адресного рядка значення параметра code= і надішліть його сюди.`,
-		ebayLinked: '✅ Акаунт eBay прив\'язано! Тепер можна створювати снайпи.',
-		ebayLinkFailed: 'Не вдалося прив\'язати акаунт',
-		addSnipe: '➕ Додати снайп',
-		noSnipes: 'Активних снайпів немає.',
-		enterItemUrl: 'Надішліть посилання на аукціон eBay (або ID лота):',
-		invalidItemUrl: 'Не схоже на посилання чи ID лота eBay. Спробуйте ще раз:',
-		enterMaxBid: (title) => `Лот: ${title ?? ''}\nВведіть вашу максимальну ставку, $:`,
-		snipeCreated: (s) => `🎯 Снайп створено!\n${s.title}\nМакс. ставка: ${s.max_bid} ${s.currency}\nЗавершення: ${moment(s.end_time).tz('Europe/Kyiv').format('LLLL')}\nБот зробить ставку за кілька секунд до кінця.`,
-		snipeFailedCreate: 'Не вдалося створити снайп',
-		snipeCancel: '🚫 Скасувати',
-		snipeCancelled: 'Снайп скасовано',
-		snipeCancelFailed: 'Не вдалося скасувати (можливо, ставка вже зроблена)',
-		snipeStatus: { pending: '⏳ очікує', placed: '📤 ставку зроблено', won: '🏆 виграно', lost: '❌ програно', failed: '⚠️ помилка', cancelled: '🚫 скасовано' },
-		snipeEventPlaced: (p) => `📤 Ставку ${p.maxBid} ${p.currency} зроблено${p.dryRun ? ' (ТЕСТ, без реальної ставки)' : ''}:\n${p.title}`,
-		snipeEventFailed: (p) => `⚠️ Не вдалося зробити ставку на "${p.title}":\n${p.error}`,
-		snipeEventMissed: (p) => `⚠️ Пропущено аукціон "${p.title}" — він завершився до того, як бот встиг зробити ставку.`,
-		snipeEventWon: (p) => `🏆 Ви виграли аукціон!\n${p.title}\nВаша ставка: ${p.maxBid} ${p.currency}`,
-		snipeEventLost: (p) => `❌ Аукціон завершився, ви не виграли:\n${p.title}`,
-		snipeBtn: '🎯 Снайп',
 		accessRestricted: '⛔ Доступ до бота обмежено.',
 	},
 	en: {
@@ -257,27 +231,6 @@ const translations = {
 		itemPositiveOrders: '% positive feedback',
 		itemCondition: 'Condition:',
 		itemLocation: 'City:',
-		snipes: '🎯 Snipes',
-		linkEbayPrompt: (url) => `To place bids, link your eBay account:\n\n1. Open the link and grant access:\n${url}\n\n2. After confirming you'll be redirected — copy the code= parameter value from the address bar and send it here.`,
-		ebayLinked: '✅ eBay account linked! You can now create snipes.',
-		ebayLinkFailed: 'Failed to link account',
-		addSnipe: '➕ Add snipe',
-		noSnipes: 'No active snipes.',
-		enterItemUrl: 'Send an eBay auction link (or item ID):',
-		invalidItemUrl: 'That doesn\'t look like an eBay link or item ID. Try again:',
-		enterMaxBid: (title) => `Item: ${title ?? ''}\nEnter your maximum bid, $:`,
-		snipeCreated: (s) => `🎯 Snipe created!\n${s.title}\nMax bid: ${s.max_bid} ${s.currency}\nEnds: ${moment(s.end_time).tz('Europe/Kyiv').format('LLLL')}\nThe bot will bid a few seconds before the end.`,
-		snipeFailedCreate: 'Failed to create snipe',
-		snipeCancel: '🚫 Cancel',
-		snipeCancelled: 'Snipe cancelled',
-		snipeCancelFailed: 'Failed to cancel (bid may already be placed)',
-		snipeStatus: { pending: '⏳ pending', placed: '📤 bid placed', won: '🏆 won', lost: '❌ lost', failed: '⚠️ failed', cancelled: '🚫 cancelled' },
-		snipeEventPlaced: (p) => `📤 Bid of ${p.maxBid} ${p.currency} placed${p.dryRun ? ' (DRY RUN, no real bid)' : ''}:\n${p.title}`,
-		snipeEventFailed: (p) => `⚠️ Failed to bid on "${p.title}":\n${p.error}`,
-		snipeEventMissed: (p) => `⚠️ Missed auction "${p.title}" — it ended before the bot could place a bid.`,
-		snipeEventWon: (p) => `🏆 You won the auction!\n${p.title}\nYour bid: ${p.maxBid} ${p.currency}`,
-		snipeEventLost: (p) => `❌ Auction ended, you didn't win:\n${p.title}`,
-		snipeBtn: '🎯 Snipe',
 		accessRestricted: '⛔ Access to the bot is restricted.',
 	},
 };
@@ -314,12 +267,10 @@ function languageKeyboard() {
 	};
 }
 
-function mainMenu(lang, chatId) {
-	const rows = [[t(lang, 'addSearch'), t(lang, 'mySearches')]];
-	if (isAdmin(chatId)) rows.push([t(lang, 'snipes')]);
+function mainMenu(lang) {
 	return {
 		reply_markup: {
-			keyboard: rows,
+			keyboard: [[t(lang, 'addSearch'), t(lang, 'mySearches')]],
 			resize_keyboard: true
 		}
 	};
@@ -367,21 +318,10 @@ function locationKeyboard(lang) {
 
 function showMenu(ctx) {
 	const lang = getLang(ctx.chat.id);
-	ctx.reply(t(lang, 'chooseAction'), mainMenu(lang, ctx.chat.id));
+	ctx.reply(t(lang, 'chooseAction'), mainMenu(lang));
 }
 
 function formatItem(item, lang) {
-	if (item.type === 'snipe_update') {
-		const byEvent = {
-			placed: 'snipeEventPlaced',
-			failed: 'snipeEventFailed',
-			missed: 'snipeEventMissed',
-			won: 'snipeEventWon',
-			lost: 'snipeEventLost',
-		};
-		return t(lang, byEvent[item.event] ?? 'snipeEventFailed', item);
-	}
-
 	const time = moment.utc(item.itemCreationDate).tz('Europe/Kyiv').format('LLLL');
 
 	if (item.source === 'olx') {
@@ -466,17 +406,17 @@ async function cancelWizard(ctx) {
 	ctx.session.state = 'default';
 	ctx.session.draft = {};
 	ctx.session.categoryLabels = {};
-	await ctx.reply(t(lang, 'cancelled'), mainMenu(lang, ctx.chat.id));
+	await ctx.reply(t(lang, 'cancelled'), mainMenu(lang));
 }
 
 async function finishWizard(ctx) {
 	const lang = getLang(ctx.chat.id);
 	try {
 		const { data: search } = await axios.post(`${BACKEND_URL}/searches`, { chatId: ctx.chat.id, ...ctx.session.draft });
-		await ctx.reply(t(lang, 'searchAdded', describeSearch(search, lang)), mainMenu(lang, ctx.chat.id));
+		await ctx.reply(t(lang, 'searchAdded', describeSearch(search, lang)), mainMenu(lang));
 	} catch (err) {
 		const message = err.response?.data?.error || t(lang, 'addSearchFailed');
-		await ctx.reply(message, mainMenu(lang, ctx.chat.id));
+		await ctx.reply(message, mainMenu(lang));
 	}
 	ctx.session.state = 'default';
 	ctx.session.draft = {};
@@ -502,7 +442,7 @@ bot.action(/^lang:(uk|en)$/, async (ctx) => {
 	touchUser(ctx.from, ctx.chat.id, { force: true });
 
 	await ctx.editMessageText(t(lang, 'languageSet'));
-	await ctx.reply(t(lang, 'welcome', ctx.from.username || ctx.from.first_name), mainMenu(lang, ctx.chat.id));
+	await ctx.reply(t(lang, 'welcome', ctx.from.username || ctx.from.first_name), mainMenu(lang));
 });
 
 bot.start(ctx => {
@@ -533,75 +473,6 @@ bot.action(/^src:(ebay|olx)$/, async (ctx) => {
 
 bot.hears([translations.uk.mySearches, translations.en.mySearches], async (ctx) => {
 	await sendMySearches(ctx);
-});
-
-function parseEbayItemId(text) {
-	const urlMatch = text.match(/itm\/(?:[^/?\s]*\/)?(\d{9,15})/);
-	if (urlMatch) return urlMatch[1];
-	const bare = text.trim().match(/^(\d{9,15})$/);
-	return bare ? bare[1] : null;
-}
-
-async function sendSnipesMenu(ctx) {
-	const chatId = ctx.chat.id;
-	const lang = getLang(chatId);
-
-	const { data: auth } = await axios.get(`${BACKEND_URL}/auth/ebay/url`, { params: { chatId } });
-	if (!auth.linked) {
-		ctx.session.state = 'awaitingEbayCode';
-		await ctx.reply(t(lang, 'linkEbayPrompt', auth.url), cancelOnlyKeyboard(lang));
-		return;
-	}
-
-	const { data: snipes } = await axios.get(`${BACKEND_URL}/snipes`, { params: { chatId } });
-	const active = snipes.filter((s) => ['pending', 'placed'].includes(s.status));
-
-	if (active.length === 0) {
-		await ctx.reply(t(lang, 'noSnipes'));
-	}
-	for (const s of active) {
-		const status = t(lang, 'snipeStatus')[s.status] ?? s.status;
-		const buttons = s.status === 'pending'
-			? { inline_keyboard: [[{ text: t(lang, 'snipeCancel'), callback_data: `snipedel:${s.id}` }]] }
-			: undefined;
-		await ctx.reply(
-			`${status} | ${s.title}\n${s.max_bid} ${s.currency} | ${moment(s.end_time).tz('Europe/Kyiv').format('LLLL')}`,
-			buttons ? { reply_markup: buttons } : undefined
-		);
-	}
-
-	await ctx.reply(t(lang, 'enterItemUrl'), cancelOnlyKeyboard(lang));
-	ctx.session.state = 'awaitingSnipeItem';
-}
-
-bot.hears([translations.uk.snipes, translations.en.snipes], async (ctx) => {
-	if (!isAdmin(ctx.chat.id)) return;
-	await sendSnipesMenu(ctx);
-});
-
-bot.action(/^snipedel:(\d+)$/, async (ctx) => {
-	const chatId = ctx.chat.id;
-	const lang = getLang(chatId);
-	if (!isAdmin(chatId)) return ctx.answerCbQuery();
-
-	try {
-		await axios.delete(`${BACKEND_URL}/snipes/${ctx.match[1]}`, { params: { chatId } });
-		await ctx.editMessageText(t(lang, 'snipeCancelled'));
-		await ctx.answerCbQuery(t(lang, 'snipeCancelled'));
-	} catch (err) {
-		await ctx.answerCbQuery(t(lang, 'snipeCancelFailed'));
-	}
-});
-
-bot.action(/^snipe:(\d+)$/, async (ctx) => {
-	await ctx.answerCbQuery();
-	const chatId = ctx.chat.id;
-	if (!isAdmin(chatId)) return;
-	const lang = getLang(chatId);
-
-	ctx.session.draft = { snipeItemId: ctx.match[1] };
-	ctx.session.state = 'awaitingSnipeMaxBid';
-	await ctx.reply(t(lang, 'enterMaxBid', null), cancelOnlyKeyboard(lang));
 });
 
 bot.action(/^toggle:(\d+):(true|false)$/, async (ctx) => {
@@ -709,56 +580,6 @@ bot.on("message", async (ctx) => {
 		return;
 	}
 
-	if (state === 'awaitingEbayCode' && text) {
-		if (!isAdmin(ctx.chat.id)) return;
-		try {
-			await axios.post(`${BACKEND_URL}/auth/ebay/code`, { chatId: ctx.chat.id, code: text });
-			ctx.session.state = 'default';
-			await ctx.reply(t(lang, 'ebayLinked'), mainMenu(lang, ctx.chat.id));
-		} catch (err) {
-			const message = err.response?.data?.error || t(lang, 'ebayLinkFailed');
-			await ctx.reply(message);
-		}
-		return;
-	}
-
-	if (state === 'awaitingSnipeItem' && text) {
-		if (!isAdmin(ctx.chat.id)) return;
-		const itemId = parseEbayItemId(text);
-		if (!itemId) {
-			await ctx.reply(t(lang, 'invalidItemUrl'));
-			return;
-		}
-		ctx.session.draft = { snipeItemId: itemId };
-		ctx.session.state = 'awaitingSnipeMaxBid';
-		await ctx.reply(t(lang, 'enterMaxBid', null), cancelOnlyKeyboard(lang));
-		return;
-	}
-
-	if (state === 'awaitingSnipeMaxBid' && text) {
-		if (!isAdmin(ctx.chat.id)) return;
-		const maxBid = Number(text.replace(',', '.'));
-		if (Number.isNaN(maxBid) || maxBid <= 0) {
-			await ctx.reply(t(lang, 'enterNumberOrSkip'));
-			return;
-		}
-
-		try {
-			const { data: snipe } = await axios.post(`${BACKEND_URL}/snipes`, {
-				chatId: ctx.chat.id,
-				itemId: ctx.session.draft.snipeItemId,
-				maxBid,
-			});
-			await ctx.reply(t(lang, 'snipeCreated', snipe), mainMenu(lang, ctx.chat.id));
-		} catch (err) {
-			const message = err.response?.data?.error || t(lang, 'snipeFailedCreate');
-			await ctx.reply(message, mainMenu(lang, ctx.chat.id));
-		}
-		ctx.session.state = 'default';
-		ctx.session.draft = {};
-		return;
-	}
-
 	if (state === 'awaitingQuery' && text) {
 		ctx.session.draft.query = text;
 
@@ -820,15 +641,9 @@ function startNotificationPoller() {
 						results.push({ chatId, logId, ok: false, skipped: true, error: 'skipped: chat unreachable' });
 						continue;
 					}
-					// eBay auction listings get a Snipe button (owner only)
-					const isAuction = item.source !== 'olx' && item.type !== 'snipe_update'
-						&& item.buyingOptions?.includes('AUCTION') && item.legacyItemId;
-					const extra = isAuction && isAdmin(chatId)
-						? { reply_markup: { inline_keyboard: [[{ text: t(lang, 'snipeBtn'), callback_data: `snipe:${item.legacyItemId}` }]] } }
-						: undefined;
 					// one failed chat must not drop the rest of the batch
 					try {
-						await bot.telegram.sendMessage(chatId, formatItem(item, lang), extra);
+						await bot.telegram.sendMessage(chatId, formatItem(item, lang));
 						results.push({ chatId, logId, ok: true });
 					} catch (err) {
 						const error = err.response?.description || err.message;

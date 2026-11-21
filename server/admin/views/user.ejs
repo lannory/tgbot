@@ -121,7 +121,7 @@
 		<% for (const n of notifications) { %>
 			<tr>
 				<td class="nowrap"><%= fmt.dateTime(n.created_at) %></td>
-				<td><%= n.kind === 'snipe' ? 'снайп' : fmt.platform(n.platform) %></td>
+				<td><%= fmt.platform(n.platform) %></td>
 				<td><% const href = safeUrl(n.url); if (href) { %><a href="<%= href %>" target="_blank" rel="noopener noreferrer"><%= n.title || href %></a><% } else { %><%= fmt.dash(n.title) %><% } %></td>
 				<td class="mono"><%= fmt.dash(n.search_id) %></td>
 				<td><span class="delivery delivery-<%= n.status %>"><%= { queued: 'в черзі', sent: 'доставлено', failed: 'помилка' }[n.status] %></span>

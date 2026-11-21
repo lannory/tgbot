@@ -23,8 +23,6 @@ INSERT INTO bot_users (chat_id, created_at)
 SELECT chat_id, min(created_at)
 FROM (
 	SELECT chat_id, created_at FROM searches
-	UNION ALL SELECT chat_id, created_at FROM snipes
-	UNION ALL SELECT chat_id, updated_at FROM ebay_tokens
 ) known
 GROUP BY chat_id
 ON CONFLICT (chat_id) DO NOTHING;

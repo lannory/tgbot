@@ -49,29 +49,6 @@ export async function init() {
 		);
 
 		ALTER TABLE notifications ALTER COLUMN search_id DROP NOT NULL;
-
-		CREATE TABLE IF NOT EXISTS ebay_tokens (
-			chat_id TEXT PRIMARY KEY,
-			refresh_token TEXT NOT NULL,
-			access_token TEXT,
-			access_expires_at TIMESTAMPTZ,
-			updated_at TIMESTAMPTZ NOT NULL DEFAULT now()
-		);
-
-		CREATE TABLE IF NOT EXISTS snipes (
-			id SERIAL PRIMARY KEY,
-			chat_id TEXT NOT NULL,
-			item_id TEXT NOT NULL,
-			legacy_item_id TEXT NOT NULL,
-			title TEXT,
-			end_time TIMESTAMPTZ NOT NULL,
-			max_bid NUMERIC NOT NULL,
-			currency TEXT NOT NULL DEFAULT 'USD',
-			status TEXT NOT NULL DEFAULT 'pending',
-			error TEXT,
-			placed_at TIMESTAMPTZ,
-			created_at TIMESTAMPTZ NOT NULL DEFAULT now()
-		);
 	`);
 }
 
@@ -171,7 +148,7 @@ export async function advanceLastItemCreatedAt(searchId, timestamp) {
 // Queues a notification for the bot and records it in notification_log
 // (the queue row is deleted on delivery, the log row is kept as history)
 export async function enqueueNotification(chatId, searchId, payload) {
-	const kind = payload.type === 'snipe_update' ? 'snipe' : 'listing';
+	const kind = 'listing';
 	const platform = payload.source ?? 'ebay';
 	const title = typeof payload.title === 'string' ? payload.title.slice(0, 300) : null;
 	const url = typeof payload.itemWebUrl === 'string' ? payload.itemWebUrl.slice(0, 1000) : null;
@@ -187,87 +164,6 @@ export async function enqueueNotification(chatId, searchId, payload) {
 		SELECT $1, $2, $3, id FROM log`,
 		[chatId, searchId, JSON.stringify(payload), platform, kind, title, url]
 	);
-}
-
-export async function saveEbayToken(chatId, { refreshToken, accessToken, accessExpiresAt }) {
-	await pool.query(
-		`INSERT INTO ebay_tokens (chat_id, refresh_token, access_token, access_expires_at, updated_at)
-		 VALUES ($1, $2, $3, $4, now())
-		 ON CONFLICT (chat_id) DO UPDATE SET
-			refresh_token = EXCLUDED.refresh_token,
-			access_token = EXCLUDED.access_token,
-			access_expires_at = EXCLUDED.access_expires_at,
-			updated_at = now()`,
-		[chatId, refreshToken, accessToken, accessExpiresAt]
-	);
-}
-
-export async function updateEbayAccessToken(chatId, accessToken, accessExpiresAt) {
-	await pool.query(
-		'UPDATE ebay_tokens SET access_token = $2, access_expires_at = $3, updated_at = now() WHERE chat_id = $1',
-		[chatId, accessToken, accessExpiresAt]
-	);
-}
-
-export async function getEbayToken(chatId) {
-	const { rows } = await pool.query('SELECT * FROM ebay_tokens WHERE chat_id = $1', [chatId]);
-	return rows[0] ?? null;
-}
-
-export async function createSnipe(chatId, { itemId, legacyItemId, title, endTime, maxBid, currency }) {
-	const { rows } = await pool.query(
-		`INSERT INTO snipes (chat_id, item_id, legacy_item_id, title, end_time, max_bid, currency)
-		 VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *`,
-		[chatId, itemId, legacyItemId, title, endTime, maxBid, currency]
-	);
-	return rows[0];
-}
-
-export async function listSnipesByChat(chatId) {
-	const { rows } = await pool.query(
-		'SELECT * FROM snipes WHERE chat_id = $1 ORDER BY end_time ASC',
-		[chatId]
-	);
-	return rows;
-}
-
-export async function cancelSnipe(id, chatId) {
-	const { rows } = await pool.query(
-		`UPDATE snipes SET status = 'cancelled' WHERE id = $1 AND chat_id = $2 AND status = 'pending' RETURNING *`,
-		[id, chatId]
-	);
-	return rows[0] ?? null;
-}
-
-export async function listDueSnipes(leadSeconds) {
-	const { rows } = await pool.query(
-		`SELECT * FROM snipes
-		 WHERE status = 'pending' AND end_time - make_interval(secs => $1) <= now() AND end_time > now()`,
-		[leadSeconds]
-	);
-	return rows;
-}
-
-export async function listMissedSnipes() {
-	const { rows } = await pool.query(
-		`SELECT * FROM snipes WHERE status = 'pending' AND end_time <= now()`
-	);
-	return rows;
-}
-
-export async function listPlacedAwaitingResult() {
-	const { rows } = await pool.query(
-		`SELECT * FROM snipes WHERE status = 'placed' AND end_time + interval '60 seconds' <= now()`
-	);
-	return rows;
-}
-
-export async function updateSnipeStatus(id, status, { error = null, placedAt = null } = {}) {
-	const { rows } = await pool.query(
-		`UPDATE snipes SET status = $2, error = $3, placed_at = COALESCE($4, placed_at) WHERE id = $1 RETURNING *`,
-		[id, status, error, placedAt]
-	);
-	return rows[0] ?? null;
 }
 
 export async function popAllNotifications() {
